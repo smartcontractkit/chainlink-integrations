@@ -1,0 +1,44 @@
+dir: "{{ .InterfaceDir }}/mocks"
+mockname: "{{ .InterfaceName }}"
+outpkg: mocks
+filename: "{{ .InterfaceName | snakecase }}.go"
+packages:
+  github.com/smartcontractkit/chainlink-integrations/evm/client:
+    config:
+      dir: client/clienttest
+      outpkg: clienttest
+    interfaces:
+      Client:
+  github.com/smartcontractkit/chainlink-integrations/evm/config:
+    interfaces:
+      GasEstimator:
+      ChainScopedConfig:
+  github.com/smartcontractkit/chainlink-integrations/evm/gas:
+    interfaces:
+      Config:
+      EvmFeeEstimator:
+      feeEstimatorClient:
+        config:
+          mockname: FeeEstimatorClient
+      feeHistoryEstimatorClient:
+        config:
+          mockname: FeeHistoryEstimatorClient
+      EvmEstimator:
+  github.com/smartcontractkit/chainlink-integrations/evm/gas/rollups:
+    interfaces:
+      L1Oracle:
+      l1OracleClient:
+        config:
+          mockname: L1OracleClient
+  github.com/smartcontractkit/chainlink-integrations/evm/keystore:
+    interfaces:
+      Eth:
+  github.com/smartcontractkit/chainlink-integrations/evm/monitor:
+    interfaces:
+      BalanceMonitor:
+  github.com/smartcontractkit/chainlink-framework/multinode:
+    config:
+      dir: client/clienttest
+      outpkg: clienttest
+    interfaces:
+      Subscription:
