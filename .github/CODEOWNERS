@@ -1,4 +1,4 @@
 # Root
-* @smartcontractkit/foundations @smartcontractkit/core
+* @smartcontractkit/bix-framework @smartcontractkit/core
 
-/evm @smartcontractkit/bix-framework @smartcontractkit/core
+/evm @smartcontractkit/bix-framework @smartcontractkit/core @smartcontractkit/foundations
