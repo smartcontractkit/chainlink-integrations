@@ -22,8 +22,8 @@ import (
 	chainagnostictypes "github.com/smartcontractkit/chainlink-common/pkg/types"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils/hex"
 
-	commontypes "github.com/smartcontractkit/chainlink-framework/chains"
-	htrktypes "github.com/smartcontractkit/chainlink-framework/chains/headtracker/types"
+	"github.com/smartcontractkit/chainlink-framework/chains"
+	"github.com/smartcontractkit/chainlink-framework/chains/heads"
 
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	"github.com/smartcontractkit/chainlink-integrations/evm/types/blocks"
@@ -51,8 +51,8 @@ type Head struct {
 	IsFinalized      atomic.Bool
 }
 
-var _ commontypes.Head[common.Hash] = &Head{}
-var _ htrktypes.Head[common.Hash, *big.Int] = &Head{}
+var _ chains.Head[common.Hash] = &Head{}
+var _ heads.Head[common.Hash, *big.Int] = &Head{}
 
 // NewHead returns a Head instance.
 func NewHead(number *big.Int, blockHash common.Hash, parentHash common.Hash, chainID *ubig.Big) Head {
@@ -86,7 +86,7 @@ func (h *Head) GetParentHash() common.Hash {
 	return h.ParentHash
 }
 
-func (h *Head) GetParent() commontypes.Head[common.Hash] {
+func (h *Head) GetParent() chains.Head[common.Hash] {
 	if parent := h.Parent.Load(); parent != nil {
 		return parent
 	}
@@ -116,7 +116,7 @@ func (h *Head) EarliestInChain() *Head {
 }
 
 // EarliestHeadInChain recurses through parents until it finds the earliest one
-func (h *Head) EarliestHeadInChain() commontypes.Head[common.Hash] {
+func (h *Head) EarliestHeadInChain() chains.Head[common.Hash] {
 	return h.EarliestInChain()
 }
 
@@ -141,7 +141,7 @@ func (h *Head) HashAtHeight(blockNum int64) common.Hash {
 	return headAtHeight.BlockHash()
 }
 
-func (h *Head) HeadAtHeight(blockNum int64) (commontypes.Head[common.Hash], error) {
+func (h *Head) HeadAtHeight(blockNum int64) (chains.Head[common.Hash], error) {
 	for cur := h; cur != nil; cur = cur.Parent.Load() {
 		if cur.Number == blockNum {
 			return cur, nil
@@ -169,7 +169,7 @@ func (h *Head) ChainHashes() []common.Hash {
 	return hashes
 }
 
-func (h *Head) LatestFinalizedHead() commontypes.Head[common.Hash] {
+func (h *Head) LatestFinalizedHead() chains.Head[common.Hash] {
 	for cur := h; cur != nil; cur = cur.Parent.Load() {
 		if cur.IsFinalized.Load() {
 			return cur
