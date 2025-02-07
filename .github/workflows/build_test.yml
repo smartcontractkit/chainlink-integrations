@@ -19,7 +19,7 @@ jobs:
           go-version-file: evm/go.mod
 
       - name: Build
-        run: go build -v ./...
+        run: go build ./...
 
       - name: Unit Tests
         run: GORACE="log_path=$PWD/race" go test -race ./... -coverpkg=./... -coverprofile=coverage.txt
