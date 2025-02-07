@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -569,4 +570,8 @@ func Test_IsTooManyResultsError(t *testing.T) {
 			assert.Equal(t, test.expect, evmclient.IsTooManyResults(err, &customErrors))
 		})
 	}
+
+	t.Run("Context DeadlineExceeded is TooManyResults", func(t *testing.T) {
+		assert.True(t, evmclient.IsTooManyResults(context.DeadlineExceeded, nil))
+	})
 }
