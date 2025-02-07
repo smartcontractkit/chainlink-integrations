@@ -13,9 +13,8 @@ import (
 	"github.com/smartcontractkit/chainlink-common/pkg/logger"
 	"github.com/smartcontractkit/chainlink-common/pkg/services"
 	bigmath "github.com/smartcontractkit/chainlink-common/pkg/utils/big_math"
-
 	"github.com/smartcontractkit/chainlink-framework/chains/fees"
-	"github.com/smartcontractkit/chainlink-framework/chains/headtracker"
+	"github.com/smartcontractkit/chainlink-framework/chains/heads"
 
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	evmconfig "github.com/smartcontractkit/chainlink-integrations/evm/config"
@@ -31,7 +30,7 @@ const EstimateGasBuffer = float32(1.15)
 // EvmFeeEstimator provides a unified interface that wraps EvmEstimator and can determine if legacy or dynamic fee estimation should be used
 type EvmFeeEstimator interface {
 	services.Service
-	headtracker.HeadTrackable[*evmtypes.Head, common.Hash]
+	heads.Trackable[*evmtypes.Head, common.Hash]
 
 	// L1Oracle returns the L1 gas price oracle only if the chain has one, e.g. OP stack L2s and Arbitrum.
 	L1Oracle() rollups.L1Oracle
@@ -146,7 +145,7 @@ type EvmPriorAttempt struct {
 
 // Estimator provides an interface for estimating gas price and limit
 type EvmEstimator interface {
-	headtracker.HeadTrackable[*evmtypes.Head, common.Hash]
+	heads.Trackable[*evmtypes.Head, common.Hash]
 	services.Service
 
 	// GetLegacyGas Calculates initial gas fee for non-EIP1559 transaction

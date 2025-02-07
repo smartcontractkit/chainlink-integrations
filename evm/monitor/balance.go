@@ -16,7 +16,7 @@ import (
 	"github.com/smartcontractkit/chainlink-common/pkg/logger"
 	"github.com/smartcontractkit/chainlink-common/pkg/services"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils"
-	"github.com/smartcontractkit/chainlink-framework/chains/headtracker"
+	"github.com/smartcontractkit/chainlink-framework/chains/heads"
 
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	evmclient "github.com/smartcontractkit/chainlink-integrations/evm/client"
@@ -25,7 +25,7 @@ import (
 )
 
 type (
-	HeadTrackable = headtracker.HeadTrackable[*evmtypes.Head, common.Hash]
+	HeadTrackable = heads.Trackable[*evmtypes.Head, common.Hash]
 	// BalanceMonitor checks the balance for each key on every new head
 	BalanceMonitor interface {
 		HeadTrackable
