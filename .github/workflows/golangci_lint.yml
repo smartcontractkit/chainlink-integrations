@@ -1,0 +1,28 @@
+name: Run golangci-lint
+
+on: [pull_request]
+
+jobs:
+  golangci-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          cache-dependency-path: evm/go.sum
+          go-version-file: evm/go.mod
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: --config=../.golangci.yml
+          only-new-issues: true
+          version: v1.62.2
+          working-directory: evm
