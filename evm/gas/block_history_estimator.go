@@ -917,7 +917,7 @@ func (b *BlockHistoryEstimator) EffectiveGasPrice(block evmtypes.Block, tx evmty
 	switch tx.Type {
 	case 0x0, 0x1:
 		return tx.GasPrice
-	case 0x2, 0x3:
+	case 0x2, 0x3, 0x4:
 		return b.getEffectiveGasPrice(block, tx)
 	default:
 		b.logger.Debugw(fmt.Sprintf("Ignoring unknown transaction type %v", tx.Type), "block", block, "tx", tx)
@@ -955,7 +955,7 @@ func (b *BlockHistoryEstimator) getEffectiveGasPrice(block evmtypes.Block, tx ev
 
 func (b *BlockHistoryEstimator) EffectiveTipCap(block evmtypes.Block, tx evmtypes.Transaction) *assets.Wei {
 	switch tx.Type {
-	case 0x2, 0x3:
+	case 0x2, 0x3, 0x4:
 		return tx.MaxPriorityFeePerGas
 	case 0x0, 0x1:
 		if tx.GasPrice == nil {
