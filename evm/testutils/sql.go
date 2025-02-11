@@ -39,7 +39,7 @@ func MustExec(t *testing.T, ds sqlutil.DataSource, stmt string, args ...interfac
 }
 
 // pristineDBName is a clean copy of test DB with migrations.
-const pristineDBName = "chainlink_test_pristine" //TODO update when splitting schemas
+const pristineDBName = "chainlink_test_pristine" // TODO update when splitting schemas
 
 // NewIndependentSqlxDB return a new independent test database, which does not use txdb and therefore supports txs etc.
 // Use this with caution, as it is much more costly than NewSqlxDB.

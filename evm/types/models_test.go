@@ -105,10 +105,10 @@ func TestHead_AsSlice(t *testing.T) {
 	}
 	h3.Parent.Store(h2)
 
-	assert.Len(t, (*Head)(nil).AsSlice(0), 0)
-	assert.Len(t, (*Head)(nil).AsSlice(1), 0)
+	assert.Empty(t, (*Head)(nil).AsSlice(0))
+	assert.Empty(t, (*Head)(nil).AsSlice(1))
 
-	assert.Len(t, h3.AsSlice(0), 0)
+	assert.Empty(t, h3.AsSlice(0))
 	assert.Equal(t, []*Head{h3}, h3.AsSlice(1))
 	assert.Equal(t, []*Head{h3, h2}, h3.AsSlice(2))
 	assert.Equal(t, []*Head{h3, h2, h1}, h3.AsSlice(3))

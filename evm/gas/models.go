@@ -55,7 +55,7 @@ type feeEstimatorClient interface {
 func NewEstimator(lggr logger.Logger, ethClient feeEstimatorClient, chaintype chaintype.ChainType, chainID *big.Int, geCfg evmconfig.GasEstimator, clientsByChainID map[string]rollups.DAClient) (EvmFeeEstimator, error) {
 	bh := geCfg.BlockHistory()
 	s := geCfg.Mode()
-	lggr.Infow(fmt.Sprintf("Initializing EVM gas estimator in mode: %s", s),
+	lggr.Infow("Initializing EVM gas estimator in mode: "+s,
 		"estimatorMode", s,
 		"batchSize", bh.BatchSize(),
 		"blockDelay", bh.BlockDelay(),

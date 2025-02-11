@@ -203,12 +203,12 @@ func testHexArrayScan[T ScannableArrayType](t *testing.T, dest T, args HexArrayS
 
 	err = dest.Scan(src1)
 	require.NoError(t, err)
-	require.Equal(t, length(dest), 1)
+	require.Equal(t, 1, length(dest))
 	assert.Equal(t, get(dest, 0).Bytes(), b1)
 
 	err = dest.Scan(src2)
 	require.NoError(t, err)
-	require.Equal(t, length(dest), 3)
+	require.Equal(t, 3, length(dest))
 	assert.Equal(t, get(dest, 1).Bytes(), b2)
 	assert.Equal(t, get(dest, 2).Bytes(), b2)
 

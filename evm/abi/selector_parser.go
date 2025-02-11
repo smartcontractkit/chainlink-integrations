@@ -64,7 +64,7 @@ func parseIdentifier(unescapedSelector string) (string, string, error) {
 func parseElementaryType(unescapedSelector string) (string, string, error) {
 	parsedType, rest, err := parseToken(unescapedSelector, false)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to parse elementary type: %v", err)
+		return "", "", fmt.Errorf("failed to parse elementary type: %w", err)
 	}
 	// handle arrays
 	for len(rest) > 0 && rest[0] == '[' {
@@ -100,7 +100,7 @@ func parseCompositeType(unescapedSelector string) ([]abi.ArgumentMarshaling, str
 
 		parsedType, rest, err = parseType(rest[0:])
 		if err != nil {
-			return nil, "", fmt.Errorf("failed to parse type: %v", err)
+			return nil, "", fmt.Errorf("failed to parse type: %w", err)
 		}
 
 		// skip whitespace between name and identifier
@@ -114,13 +114,13 @@ func parseCompositeType(unescapedSelector string) ([]abi.ArgumentMarshaling, str
 			// attempt to parse name
 			name, rest, err = parseIdentifier(rest)
 			if err != nil {
-				return nil, "", fmt.Errorf("failed to parse name: %v", err)
+				return nil, "", fmt.Errorf("failed to parse name: %w", err)
 			}
 		}
 
 		arg, err := assembleArg(name, parsedType)
 		if err != nil {
-			return nil, "", fmt.Errorf("failed to parse type: %v", err)
+			return nil, "", fmt.Errorf("failed to parse type: %w", err)
 		}
 
 		result = append(result, arg)
@@ -177,7 +177,7 @@ func assembleArg(name string, arg any) (abi.ArgumentMarshaling, error) {
 func ParseSelector(unescapedSelector string) (abi.SelectorMarshaling, error) {
 	name, rest, err := parseIdentifier(unescapedSelector)
 	if err != nil {
-		return abi.SelectorMarshaling{}, fmt.Errorf("failed to parse selector identifier '%s': %v", unescapedSelector, err)
+		return abi.SelectorMarshaling{}, fmt.Errorf("failed to parse selector identifier '%s': %w", unescapedSelector, err)
 	}
 	args := []abi.ArgumentMarshaling{}
 	if len(rest) >= 2 && rest[0] == '(' && rest[1] == ')' {
@@ -185,7 +185,7 @@ func ParseSelector(unescapedSelector string) (abi.SelectorMarshaling, error) {
 	} else {
 		args, rest, err = parseCompositeType(rest)
 		if err != nil {
-			return abi.SelectorMarshaling{}, fmt.Errorf("failed to parse selector args '%s': %v", unescapedSelector, err)
+			return abi.SelectorMarshaling{}, fmt.Errorf("failed to parse selector args '%s': %w", unescapedSelector, err)
 		}
 	}
 	if len(rest) > 0 {

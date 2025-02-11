@@ -95,17 +95,19 @@ func TestClient_ParseEthereumAddress(t *testing.T) {
 
 	parse := utils.ParseEthereumAddress
 	for _, address := range testAddresses {
-		a1, err := parse(address)
-		assert.NoError(t, err)
-		no0xPrefix := address[2:]
-		a2, err := parse(no0xPrefix)
-		assert.NoError(t, err)
-		assert.True(t, a1 == a2)
-		_, lowerErr := parse(strings.ToLower(address))
-		_, upperErr := parse(strings.ToUpper(address))
-		shouldBeError := multierr.Combine(lowerErr, upperErr)
-		assert.Error(t, shouldBeError)
-		assert.True(t, strings.Contains(shouldBeError.Error(), no0xPrefix))
+		t.Run(address, func(t *testing.T) {
+			a1, err := parse(address)
+			require.NoError(t, err)
+			no0xPrefix := address[2:]
+			a2, err := parse(no0xPrefix)
+			require.NoError(t, err)
+			assert.Equal(t, a1, a2)
+			_, lowerErr := parse(strings.ToLower(address))
+			_, upperErr := parse(strings.ToUpper(address))
+			shouldBeError := multierr.Combine(lowerErr, upperErr)
+			require.ErrorContains(t, shouldBeError, no0xPrefix)
+
+		})
 	}
 	_, notHexErr := parse("0xCeci n'est pas une chaîne hexadécimale")
 	assert.Error(t, notHexErr)

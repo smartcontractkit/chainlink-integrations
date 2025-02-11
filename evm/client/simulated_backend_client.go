@@ -162,7 +162,7 @@ func (c *SimulatedBackendClient) TokenBalance(ctx context.Context, address commo
 	}
 	err = balanceOfABI.UnpackIntoInterface(balance, "balanceOf", b)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unpack balance")
+		return nil, errors.New("unable to unpack balance")
 	}
 	return balance, nil
 }
@@ -229,7 +229,7 @@ func (c *SimulatedBackendClient) blockNumber(ctx context.Context, number interfa
 			return nil, nil
 		}
 		if n.Sign() < 0 {
-			return nil, fmt.Errorf("block number must be non-negative")
+			return nil, errors.New("block number must be non-negative")
 		}
 		return n, nil
 	default:
@@ -422,12 +422,12 @@ func (c *SimulatedBackendClient) SendTransaction(ctx context.Context, tx *types.
 	if err != nil {
 		sender, err = types.Sender(types.NewLondonSigner(big.NewInt(1337)), tx)
 		if err != nil {
-			logger.Test(c.t).Panic(fmt.Errorf("invalid transaction: %v (tx: %#v)", err, tx))
+			logger.Test(c.t).Panic(fmt.Errorf("invalid transaction: %w (tx: %#v)", err, tx))
 		}
 	}
 	pendingNonce, err := c.client.PendingNonceAt(ctx, sender)
 	if err != nil {
-		panic(fmt.Errorf("unable to determine nonce for account %s: %v", sender.Hex(), err))
+		panic(fmt.Errorf("unable to determine nonce for account %s: %w", sender.Hex(), err))
 	}
 	// the simulated backend does not gracefully handle tx rebroadcasts (gas bumping) so just
 	// ignore the situation where nonces are reused
@@ -839,7 +839,7 @@ func toCallMsg(params map[string]interface{}) ethereum.CallMsg {
 	var callMsg ethereum.CallMsg
 	toAddr, err := interfaceToAddress(params["to"])
 	if err != nil {
-		panic(fmt.Errorf("unexpected 'to' parameter: %s", err))
+		panic(fmt.Errorf("unexpected 'to' parameter: %w", err))
 	}
 
 	callMsg.To = &toAddr
@@ -848,7 +848,7 @@ func toCallMsg(params map[string]interface{}) ethereum.CallMsg {
 	if value, ok := params["from"]; ok {
 		addr, err := interfaceToAddress(value)
 		if err != nil {
-			panic(fmt.Errorf("unexpected 'from' parameter: %s", err))
+			panic(fmt.Errorf("unexpected 'from' parameter: %w", err))
 		}
 
 		callMsg.From = addr
@@ -922,13 +922,13 @@ func interfaceToAddress(value interface{}) (common.Address, error) {
 		return *v, nil
 	case string:
 		if ok := common.IsHexAddress(v); !ok {
-			return common.Address{}, fmt.Errorf("string not formatted as a hex encoded evm address")
+			return common.Address{}, errors.New("string not formatted as a hex encoded evm address")
 		}
 
 		return common.HexToAddress(v), nil
 	case *big.Int:
 		if v.Uint64() > 0 || len(v.Bytes()) > 20 {
-			return common.Address{}, fmt.Errorf("invalid *big.Int; value must be larger than 0 with a byte length <= 20")
+			return common.Address{}, errors.New("invalid *big.Int; value must be larger than 0 with a byte length <= 20")
 		}
 
 		return common.BigToAddress(v), nil
@@ -946,7 +946,7 @@ func interfaceToHash(value interface{}) (*common.Hash, error) {
 	case string:
 		b, err := hex.DecodeString(v)
 		if err != nil || len(b) != 32 {
-			return nil, fmt.Errorf("string does not represent a 32-byte hexadecimal number")
+			return nil, errors.New("string does not represent a 32-byte hexadecimal number")
 		}
 		h := common.Hash(b)
 		return &h, nil

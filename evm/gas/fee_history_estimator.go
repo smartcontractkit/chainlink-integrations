@@ -2,6 +2,7 @@ package gas
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -200,7 +201,7 @@ func (f *FeeHistoryEstimator) getGasPrice() (*assets.Wei, error) {
 	f.gasPriceMu.RLock()
 	defer f.gasPriceMu.RUnlock()
 	if f.gasPrice == nil {
-		return f.gasPrice, fmt.Errorf("gas price not set")
+		return f.gasPrice, errors.New("gas price not set")
 	}
 	return f.gasPrice, nil
 }
@@ -302,7 +303,7 @@ func (f *FeeHistoryEstimator) getDynamicPrice() (fee DynamicFee, err error) {
 	f.dynamicPriceMu.RLock()
 	defer f.dynamicPriceMu.RUnlock()
 	if f.dynamicPrice.GasFeeCap == nil || f.dynamicPrice.GasTipCap == nil {
-		return fee, fmt.Errorf("dynamic price not set")
+		return fee, errors.New("dynamic price not set")
 	}
 	return f.dynamicPrice, nil
 }
@@ -351,7 +352,7 @@ func (f *FeeHistoryEstimator) BumpDynamicFee(ctx context.Context, originalFee Dy
 			f.refreshCh <- struct{}{}
 			bumped, err = f.GetDynamicFee(ctx, maxPrice)
 		}) {
-			return bumped, fmt.Errorf("estimator not started")
+			return bumped, errors.New("estimator not started")
 		}
 		return bumped, err
 	}
@@ -429,7 +430,7 @@ func (f *FeeHistoryEstimator) getPriorityFeeThreshold() (*assets.Wei, error) {
 	f.priorityFeeThresholdMu.RLock()
 	defer f.priorityFeeThresholdMu.RUnlock()
 	if f.priorityFeeThreshold == nil {
-		return f.priorityFeeThreshold, fmt.Errorf("priorityFeeThreshold not set")
+		return f.priorityFeeThreshold, errors.New("priorityFeeThreshold not set")
 	}
 	return f.priorityFeeThreshold, nil
 }

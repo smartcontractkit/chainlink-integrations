@@ -234,11 +234,11 @@ func (r *RPCClient) String() string {
 	s := fmt.Sprintf("(%s)%s", r.tier.String(), r.name)
 	ws := r.ws.Load()
 	if ws != nil {
-		s = s + fmt.Sprintf(":%s", ws.uri.Redacted())
+		s = s + ":" + ws.uri.Redacted()
 	}
 	http := r.http.Load()
 	if http != nil {
-		s = s + fmt.Sprintf(":%s", http.uri.Redacted())
+		s = s + ":" + http.uri.Redacted()
 	}
 	return s
 }
@@ -585,7 +585,7 @@ func (r *RPCClient) astarLatestFinalizedBlock(ctx context.Context, result interf
 	}
 
 	if astarHead.Number == nil {
-		return r.wrapRPCClientError(fmt.Errorf("expected non empty head number of finalized block"))
+		return r.wrapRPCClientError(errors.New("expected non empty head number of finalized block"))
 	}
 
 	err = r.ethGetBlockByNumber(ctx, astarHead.Number.String(), result)

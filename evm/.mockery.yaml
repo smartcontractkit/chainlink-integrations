@@ -3,6 +3,14 @@ mockname: "{{ .InterfaceName }}"
 outpkg: mocks
 filename: "{{ .InterfaceName | snakecase }}.go"
 packages:
+  github.com/smartcontractkit/chainlink-framework/chains/heads:
+    config:
+      dir: heads/headstest
+      outpkg: headstest
+    interfaces:
+      Trackable:
+      Tracker:
+      Broadcaster:
   github.com/smartcontractkit/chainlink-integrations/evm/client:
     config:
       dir: client/clienttest

@@ -10,6 +10,12 @@ jobs:
       contents: read
       actions: read
     steps:
+      - name: Setup tar default options
+        shell: bash
+        # Do not overwrite existing files when extracting files from a cache archive.
+        # Since actions/cache does not support this option, we set it here as a default.
+        run: echo "TAR_OPTIONS=--skip-old-files" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -24,5 +30,5 @@ jobs:
         with:
           args: --config=${{ github.workspace }}/.golangci.yml
           only-new-issues: true
-          version: v1.62.2
+          version: v1.63.4
           working-directory: evm

@@ -509,7 +509,7 @@ func TestFeeHistoryEstimatorBumpDynamicFee(t *testing.T) {
 		servicetest.RunHealthy(t, u)
 		bumpedFee, err := u.BumpDynamicFee(tests.Context(t), originalFee, globalMaxPrice, nil)
 		assert.NoError(t, err)
-		assert.Equal(t, assets.NewWeiI(0), (*assets.Wei)(maxPriorityFeePerGas))
+		assert.Equal(t, (*assets.Wei)(maxPriorityFeePerGas), assets.NewWeiI(0))
 		assert.Equal(t, maxFeePerGas, bumpedFee.GasFeeCap)
 	})
 }

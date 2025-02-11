@@ -2,7 +2,7 @@ package gas_test
 
 import (
 	"bytes"
-	"fmt"
+	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -80,7 +80,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(zeros.Bytes(), nil)
 
@@ -108,7 +108,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(zeros.Bytes(), nil)
 
@@ -135,7 +135,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(zeros.Bytes(), nil)
 
@@ -168,7 +168,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(zeros.Bytes(), nil)
 
@@ -225,7 +225,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(b.Bytes(), nil)
 
@@ -261,7 +261,7 @@ func TestArbitrumEstimator(t *testing.T) {
 			callMsg := args.Get(1).(ethereum.CallMsg)
 			blockNumber := args.Get(2).(*big.Int)
 			assert.Equal(t, rollups.ArbGasInfoAddress, callMsg.To.String())
-			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, fmt.Sprintf("%x", callMsg.Data))
+			assert.Equal(t, rollups.ArbGasInfo_getPricesInArbGas, hex.EncodeToString(callMsg.Data))
 			assert.Equal(t, big.NewInt(-1), blockNumber)
 		}).Return(b.Bytes(), nil)
 

@@ -8,6 +8,10 @@ jobs:
     defaults:
       run:
         working-directory: evm # applied only for "run" steps
+    env:
+      # We explicitly have this env var not be "CL_DATABASE_URL" to avoid having it be used by core related tests
+      # when they should not be using it, while still allowing us to DRY up the setup
+      DB_URL: postgresql://postgres:postgres@localhost:5432/chainlink_test?sslmode=disable
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
@@ -21,8 +25,18 @@ jobs:
       - name: Build
         run: go build ./...
 
+      - name: Setup Postgres
+        uses: smartcontractkit/.github/actions/setup-postgres@f0f01123a75161f4e1119541c37b8dc19820c15c
+
+      - name: Setup DB
+        run: make testdb
+        env:
+          CL_DATABASE_URL: ${{ env.DB_URL }}
+
       - name: Unit Tests
         run: GORACE="log_path=$PWD/race" go test -race ./... -coverpkg=./... -coverprofile=coverage.txt
+        env:
+          CL_DATABASE_URL: ${{ env.DB_URL }}
 
       - name: Print Races
         if: failure()

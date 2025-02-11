@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync/atomic"
@@ -67,7 +68,7 @@ func Bytes32ToSlice(a [32]byte) (r []byte) {
 // Uint256ToBytes is x represented as the bytes of a uint256
 func Uint256ToBytes(x *big.Int) (uint256 []byte, err error) {
 	if x.Cmp(MaxUint256) > 0 {
-		return nil, fmt.Errorf("too large to convert to uint256")
+		return nil, errors.New("too large to convert to uint256")
 	}
 	uint256 = common.LeftPadBytes(x.Bytes(), EVMWordByteLen)
 	if x.Cmp(big.NewInt(0).SetBytes(uint256)) != 0 {
@@ -139,7 +140,7 @@ var zero = big.NewInt(0)
 // CheckUint256 returns an error if n is out of bounds for a uint256
 func CheckUint256(n *big.Int) error {
 	if n.Cmp(zero) < 0 || n.Cmp(MaxUint256) >= 0 {
-		return fmt.Errorf("number out of range for uint256")
+		return errors.New("number out of range for uint256")
 	}
 	return nil
 }

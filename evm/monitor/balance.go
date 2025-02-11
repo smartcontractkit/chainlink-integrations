@@ -132,7 +132,7 @@ func (bm *balanceMonitor) promUpdateEthBalance(balance *assets.Eth, from common.
 	balanceFloat, err := ApproximateFloat64(balance)
 
 	if err != nil {
-		bm.eng.Error(fmt.Errorf("updatePrometheusEthBalance: %v", err))
+		bm.eng.Error(fmt.Errorf("updatePrometheusEthBalance: %w", err))
 		return
 	}
 
@@ -174,7 +174,7 @@ func (w *worker) checkAccountBalance(ctx context.Context, address common.Address
 
 	bal, err := w.bm.ethClient.BalanceAt(ctx, address, nil)
 	if err != nil {
-		w.bm.eng.Errorw(fmt.Sprintf("BalanceMonitor: error getting balance for key %s", address.Hex()),
+		w.bm.eng.Errorw("BalanceMonitor: error getting balance for key "+address.Hex(),
 			"err", err,
 			"address", address,
 		)

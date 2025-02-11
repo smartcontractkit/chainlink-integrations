@@ -177,7 +177,7 @@ func TestSubscriptionErrorWrapper(t *testing.T) {
 		sub := NewMockSubscription()
 		const prefix = "RPC returned error"
 		wrapper := newSubscriptionErrorWrapper(t, sub, prefix)
-		sub.Errors <- fmt.Errorf("root error")
+		sub.Errors <- errors.New("root error")
 
 		err, ok := <-wrapper.Err()
 		assert.True(t, ok)
