@@ -655,7 +655,7 @@ func ClassifySendError(err error, clientErrors config.ClientErrors, lggr logger.
 		return multinode.Retryable
 	}
 	if sendError.IsTxFeeExceedsCap(configErrors) {
-		lggr.Criticalw(fmt.Sprintf("Sending transaction failed: %s", label.RPCTxFeeCapConfiguredIncorrectlyWarning),
+		lggr.Criticalw("Sending transaction failed: "+label.RPCTxFeeCapConfiguredIncorrectlyWarning,
 			"etx", tx,
 			"err", sendError,
 			"id", "RPCTxFeeCapExceeded",

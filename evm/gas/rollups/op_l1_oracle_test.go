@@ -1,7 +1,7 @@
 package rollups
 
 import (
-	"fmt"
+	"errors"
 	"math/big"
 	"strings"
 	"testing"
@@ -74,7 +74,7 @@ func TestOPL1Oracle_ReadV1GasPrice(t *testing.T) {
 			ethClient := mocks.NewL1OracleClient(t)
 			ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Run(func(args mock.Arguments) {
 				rpcElements := args.Get(1).([]rpc.BatchElem)
-				require.Equal(t, 2, len(rpcElements))
+				require.Len(t, rpcElements, 2)
 				for _, rE := range rpcElements {
 					require.Equal(t, "eth_call", rE.Method)
 					require.Equal(t, oracleAddress, rE.Args[0].(map[string]interface{})["to"])
@@ -84,12 +84,12 @@ func TestOPL1Oracle_ReadV1GasPrice(t *testing.T) {
 				require.Equal(t, hexutil.Bytes(isEcotoneCalldata), rpcElements[1].Args[0].(map[string]interface{})["data"])
 				isUpgraded := "0x0000000000000000000000000000000000000000000000000000000000000000"
 				if tc.isFjordError {
-					rpcElements[0].Error = fmt.Errorf("test error")
+					rpcElements[0].Error = errors.New("test error")
 				} else {
 					rpcElements[0].Result = &isUpgraded
 				}
 				if tc.isEcotoneError {
-					rpcElements[1].Error = fmt.Errorf("test error")
+					rpcElements[1].Error = errors.New("test error")
 				} else {
 					rpcElements[1].Result = &isUpgraded
 				}
@@ -136,7 +136,7 @@ func setupUpgradeCheck(t *testing.T, oracleAddress string, isFjord, isEcotone bo
 	ethClient := mocks.NewL1OracleClient(t)
 	ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Run(func(args mock.Arguments) {
 		rpcElements := args.Get(1).([]rpc.BatchElem)
-		require.Equal(t, 2, len(rpcElements))
+		require.Len(t, rpcElements, 2)
 		for _, rE := range rpcElements {
 			require.Equal(t, "eth_call", rE.Method)
 			require.Equal(t, oracleAddress, rE.Args[0].(map[string]interface{})["to"])
@@ -185,7 +185,7 @@ func mockBatchContractCall(t *testing.T, ethClient *mocks.L1OracleClient, oracle
 
 	ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Run(func(args mock.Arguments) {
 		rpcElements := args.Get(1).([]rpc.BatchElem)
-		require.Equal(t, 5, len(rpcElements))
+		require.Len(t, rpcElements, 5)
 
 		for _, rE := range rpcElements {
 			require.Equal(t, "eth_call", rE.Method)
@@ -255,7 +255,7 @@ func TestOPL1Oracle_CalculateEcotoneGasPrice(t *testing.T) {
 
 	t.Run("fetching Ecotone price but rpc parent call errors", func(t *testing.T) {
 		ethClient := setupUpgradeCheck(t, oracleAddress, false, true)
-		ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Return(fmt.Errorf("revert")).Once()
+		ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Return(errors.New("revert")).Once()
 
 		daOracle := CreateTestDAOracle(t, toml.DAOracleOPStack, oracleAddress, "")
 		oracle, err := NewOpStackL1GasOracle(logger.Test(t), ethClient, chaintype.ChainOptimismBedrock, daOracle)
@@ -270,7 +270,7 @@ func TestOPL1Oracle_CalculateEcotoneGasPrice(t *testing.T) {
 			rpcElements := args.Get(1).([]rpc.BatchElem)
 			res := common.BigToHash(baseFee).Hex()
 			rpcElements[0].Result = &res
-			rpcElements[1].Error = fmt.Errorf("revert")
+			rpcElements[1].Error = errors.New("revert")
 		}).Return(nil).Once()
 
 		daOracle := CreateTestDAOracle(t, toml.DAOracleOPStack, oracleAddress, "")
@@ -323,7 +323,7 @@ func TestOPL1Oracle_CalculateFjordGasPrice(t *testing.T) {
 
 	t.Run("fetching Fjord price but rpc parent call errors", func(t *testing.T) {
 		ethClient := setupUpgradeCheck(t, oracleAddress, true, true)
-		ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Return(fmt.Errorf("revert")).Once()
+		ethClient.On("BatchCallContext", mock.Anything, mock.IsType([]rpc.BatchElem{})).Return(errors.New("revert")).Once()
 
 		daOracle := CreateTestDAOracle(t, toml.DAOracleOPStack, oracleAddress, "")
 		oracle, err := NewOpStackL1GasOracle(logger.Test(t), ethClient, chaintype.ChainOptimismBedrock, daOracle)
@@ -338,7 +338,7 @@ func TestOPL1Oracle_CalculateFjordGasPrice(t *testing.T) {
 			rpcElements := args.Get(1).([]rpc.BatchElem)
 			res := common.BigToHash(baseFee).Hex()
 			rpcElements[0].Result = &res
-			rpcElements[1].Error = fmt.Errorf("revert")
+			rpcElements[1].Error = errors.New("revert")
 		}).Return(nil).Once()
 
 		daOracle := CreateTestDAOracle(t, toml.DAOracleOPStack, oracleAddress, "")

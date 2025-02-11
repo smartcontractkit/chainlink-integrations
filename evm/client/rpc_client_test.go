@@ -345,7 +345,7 @@ func TestRPCClient_SubscribeFilterLogs(t *testing.T) {
 		// ws is optional when LogBroadcaster is disabled, however SubscribeFilterLogs will return error if ws is missing
 		observedLggr := logger.Test(t)
 		rpcClient := client.NewRPCClient(nodePoolCfg, observedLggr, nil, &url.URL{}, "rpc", 1, chainId, multinode.Primary, client.QueryTimeout, client.QueryTimeout, "")
-		require.Nil(t, rpcClient.Dial(ctx))
+		require.NoError(t, rpcClient.Dial(ctx))
 
 		_, err := rpcClient.SubscribeFilterLogs(ctx, ethereum.FilterQuery{}, make(chan types.Log))
 		require.Equal(t, errors.New("SubscribeFilterLogs is not allowed without ws url"), err)
@@ -707,7 +707,7 @@ func TestRpcClientLargePayloadTimeout(t *testing.T) {
 			require.NoError(t, rpc.Dial(ctx))
 			defer rpc.Close()
 			err := testCase.Fn(ctx, rpc)
-			assert.True(t, errors.Is(err, context.DeadlineExceeded), fmt.Sprintf("Expected DedlineExceeded error, but got: %v", err))
+			assert.ErrorIs(t, err, context.DeadlineExceeded, "Expected DedlineExceeded error, but got: %v", err)
 		})
 	}
 }
@@ -741,7 +741,7 @@ func TestAstarCustomFinality(t *testing.T) {
 				assert.Fail(t, fmt.Sprintf("unexpected eth_getBlockByNumber param: %v", params.Array()))
 			}
 		default:
-			assert.Fail(t, fmt.Sprintf("unexpected method: %s", method))
+			assert.Fail(t, "unexpected method: "+method)
 		}
 		return
 	}).WSURL()

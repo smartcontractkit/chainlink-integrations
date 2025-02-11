@@ -101,7 +101,7 @@ func TestNodeConfigs(t *testing.T) {
 			},
 		}
 		_, err := client.ParseTestNodeConfigs(nodeConfigs)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("parsing missing http url fails", func(t *testing.T) {

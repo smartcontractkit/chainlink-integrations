@@ -99,6 +99,15 @@ func (cs *EVMConfigs) SetFrom(fs *EVMConfigs) (err error) {
 	return
 }
 
+func (cs EVMConfigs) Enabled() bool {
+	for _, c := range cs {
+		if c.IsEnabled() {
+			return true
+		}
+	}
+	return false
+}
+
 func (cs EVMConfigs) totalChains() int {
 	total := 0
 	for _, ch := range cs {

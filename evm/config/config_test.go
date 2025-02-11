@@ -209,7 +209,7 @@ func TestChainScopedConfig(t *testing.T) {
 
 	t.Run("LogBroadcasterEnabled", func(t *testing.T) {
 		t.Run("turn on LogBroadcasterEnabled by default", func(t *testing.T) {
-			assert.Equal(t, true, cfg.EVM().LogBroadcasterEnabled())
+			assert.True(t, cfg.EVM().LogBroadcasterEnabled())
 		})
 
 		t.Run("verify LogBroadcasterEnabled is set correctly", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestChainScopedConfig(t *testing.T) {
 				c.LogBroadcasterEnabled = ptr(val)
 			})
 
-			assert.Equal(t, false, cfg3.EVM().LogBroadcasterEnabled())
+			assert.False(t, cfg3.EVM().LogBroadcasterEnabled())
 		})
 	})
 
@@ -281,7 +281,7 @@ func TestChainScopedConfig_GasEstimator(t *testing.T) {
 	assert.Equal(t, assets.GWei(100), ge.FeeCapDefault())
 	assert.Equal(t, assets.NewWeiI(1), ge.TipCapDefault())
 	assert.Equal(t, assets.NewWeiI(1), ge.TipCapMin())
-	assert.Equal(t, false, ge.EstimateLimit())
+	assert.False(t, ge.EstimateLimit())
 }
 
 func TestChainScopedConfig_BSCDefaults(t *testing.T) {
@@ -353,9 +353,9 @@ func TestChainScopedConfig_HeadTracker(t *testing.T) {
 	assert.Equal(t, uint32(100), ht.HistoryDepth())
 	assert.Equal(t, uint32(3), ht.MaxBufferSize())
 	assert.Equal(t, time.Second, ht.SamplingInterval())
-	assert.Equal(t, true, ht.FinalityTagBypass())
+	assert.True(t, ht.FinalityTagBypass())
 	assert.Equal(t, uint32(10000), ht.MaxAllowedFinalityDepth())
-	assert.Equal(t, true, ht.PersistenceEnabled())
+	assert.True(t, ht.PersistenceEnabled())
 }
 
 func TestNodePoolConfig(t *testing.T) {

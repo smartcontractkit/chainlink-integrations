@@ -246,8 +246,8 @@ func TestWrappedEvmEstimator(t *testing.T) {
 		estimator := gas.NewEvmFeeEstimator(lggr, getEst, false, geCfg, nil)
 		report := estimator.HealthReport()
 		require.True(t, pkgerrors.Is(report[evmEstimatorKey], evmEstimatorError))
-		require.Nil(t, report[oracleKey])
-		require.NotNil(t, report[mockEstimatorName])
+		require.NoError(t, report[oracleKey])
+		require.Error(t, report[mockEstimatorName])
 
 		evmEstimator.On("L1Oracle").Return(oracle).Once()
 
@@ -255,7 +255,7 @@ func TestWrappedEvmEstimator(t *testing.T) {
 		report = estimator.HealthReport()
 		require.True(t, pkgerrors.Is(report[evmEstimatorKey], evmEstimatorError))
 		require.True(t, pkgerrors.Is(report[oracleKey], oracleError))
-		require.NotNil(t, report[mockEstimatorName])
+		require.Error(t, report[mockEstimatorName])
 	})
 
 	t.Run("GetFee, estimate gas limit enabled, succeeds", func(t *testing.T) {

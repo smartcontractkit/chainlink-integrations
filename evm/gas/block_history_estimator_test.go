@@ -107,8 +107,8 @@ func TestBlockHistoryEstimator_Start(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Len(t, gas.GetRollingBlockHistory(bhe), 2)
-		assert.Equal(t, int(gas.GetRollingBlockHistory(bhe)[0].Number), 41)
-		assert.Equal(t, int(gas.GetRollingBlockHistory(bhe)[1].Number), 42)
+		assert.Equal(t, 41, int(gas.GetRollingBlockHistory(bhe)[0].Number))
+		assert.Equal(t, 42, int(gas.GetRollingBlockHistory(bhe)[1].Number))
 
 		assert.Equal(t, assets.NewWeiI(420), gas.GetLatestBaseFee(bhe))
 	})
@@ -152,7 +152,7 @@ func TestBlockHistoryEstimator_Start(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Len(t, gas.GetRollingBlockHistory(bhe), 1)
-		assert.Equal(t, int(gas.GetRollingBlockHistory(bhe)[0].Number), 42)
+		assert.Equal(t, 42, int(gas.GetRollingBlockHistory(bhe)[0].Number))
 
 		assert.Equal(t, assets.NewWeiI(420), gas.GetLatestBaseFee(bhe))
 	})
@@ -419,7 +419,7 @@ func TestBlockHistoryEstimator_FetchBlocks(t *testing.T) {
 		// 42 is missing because the fetch errored
 		assert.Equal(t, 43, int(gas.GetRollingBlockHistory(bhe)[1].Number))
 		assert.Len(t, gas.GetRollingBlockHistory(bhe)[0].Transactions, 2)
-		assert.Len(t, gas.GetRollingBlockHistory(bhe)[1].Transactions, 0)
+		assert.Empty(t, gas.GetRollingBlockHistory(bhe)[1].Transactions)
 
 		// On new fetch, rolls over the history and drops the old heads
 
@@ -450,7 +450,7 @@ func TestBlockHistoryEstimator_FetchBlocks(t *testing.T) {
 		assert.Equal(t, 43, int(gas.GetRollingBlockHistory(bhe)[1].Number))
 		assert.Equal(t, 44, int(gas.GetRollingBlockHistory(bhe)[2].Number))
 		assert.Len(t, gas.GetRollingBlockHistory(bhe)[0].Transactions, 1)
-		assert.Len(t, gas.GetRollingBlockHistory(bhe)[1].Transactions, 0)
+		assert.Empty(t, gas.GetRollingBlockHistory(bhe)[1].Transactions)
 		assert.Len(t, gas.GetRollingBlockHistory(bhe)[2].Transactions, 1)
 	})
 
@@ -695,7 +695,7 @@ func TestBlockHistoryEstimator_FetchBlocks(t *testing.T) {
 		assert.Equal(t, 42, int(gas.GetRollingBlockHistory(bhe)[0].Number))
 		assert.Equal(t, 43, int(gas.GetRollingBlockHistory(bhe)[1].Number))
 		assert.Len(t, gas.GetRollingBlockHistory(bhe)[0].Transactions, 1)
-		assert.Len(t, gas.GetRollingBlockHistory(bhe)[1].Transactions, 0)
+		assert.Empty(t, gas.GetRollingBlockHistory(bhe)[1].Transactions)
 	})
 }
 
@@ -1417,19 +1417,19 @@ func TestBlockHistoryEstimator_IsUsable(t *testing.T) {
 	}
 	t.Run("returns false if transaction has 0 gas limit", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x0, GasPrice: assets.NewWeiI(10), GasLimit: 0, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction gas limit is nil and tx type is 0x0", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x0, GasPrice: nil, GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction is of type 0x7e only on Optimism", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x7e, GasPrice: assets.NewWeiI(10), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainOptimismBedrock, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainOptimismBedrock, geCfg.PriceMin(), logger.Test(t)))
 
-		assert.Equal(t, true, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction is of type 0x7c, 0x7b, or 0x7e only on Celo", func(t *testing.T) {
@@ -1449,39 +1449,39 @@ func TestBlockHistoryEstimator_IsUsable(t *testing.T) {
 
 	t.Run("returns false if transaction is of type 0x16 only on WeMix", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x16, GasPrice: assets.NewWeiI(10), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainWeMix, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainWeMix, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction has base fee higher than the gas price only on Celo", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x0, GasPrice: assets.NewWeiI(10), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainCelo, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainCelo, geCfg.PriceMin(), logger.Test(t)))
 
 		tx2 := evmtypes.Transaction{Type: 0x2, MaxPriorityFeePerGas: assets.NewWeiI(200), MaxFeePerGas: assets.NewWeiI(250),
 			GasPrice: assets.NewWeiI(50), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainCelo, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainCelo, geCfg.PriceMin(), logger.Test(t)))
 
-		assert.Equal(t, true, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
-		assert.Equal(t, true, bhe.IsUsable(tx2, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx2, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction is of type 0x71 or 0xff only on zkSync", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x71, GasPrice: assets.NewWeiI(10), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
 
 		tx.Type = 0x02
-		assert.Equal(t, true, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
 
 		tx.Type = 0xff
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainZkSync, geCfg.PriceMin(), logger.Test(t)))
 
-		assert.Equal(t, true, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 
 	t.Run("returns false if transaction is of type 0x7e only on Scroll", func(t *testing.T) {
 		tx := evmtypes.Transaction{Type: 0x7e, GasPrice: assets.NewWeiI(10), GasLimit: 42, Hash: utils.NewHash()}
-		assert.Equal(t, false, bhe.IsUsable(tx, block, chaintype.ChainScroll, geCfg.PriceMin(), logger.Test(t)))
+		assert.False(t, bhe.IsUsable(tx, block, chaintype.ChainScroll, geCfg.PriceMin(), logger.Test(t)))
 
-		assert.Equal(t, true, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
+		assert.True(t, bhe.IsUsable(tx, block, defaultChainType, geCfg.PriceMin(), logger.Test(t)))
 	})
 }
 

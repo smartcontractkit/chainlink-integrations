@@ -2,6 +2,7 @@ package rollups
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -200,15 +201,15 @@ func (o *arbitrumL1Oracle) GasPrice(_ context.Context) (l1GasPrice *assets.Wei, 
 		o.l1GasPriceMu.RUnlock()
 	})
 	if !ok {
-		return l1GasPrice, fmt.Errorf("L1GasOracle is not started; cannot estimate gas")
+		return l1GasPrice, errors.New("L1GasOracle is not started; cannot estimate gas")
 	}
 	if l1GasPrice == nil {
-		return l1GasPrice, fmt.Errorf("failed to get l1 gas price; gas price not set")
+		return l1GasPrice, errors.New("failed to get l1 gas price; gas price not set")
 	}
 	// Validate the price has been updated within the pollPeriod * 2
 	// Allowing double the poll period before declaring the price stale to give ample time for the refresh to process
 	if time.Since(timestamp) > o.pollPeriod*2 {
-		return l1GasPrice, fmt.Errorf("gas price is stale")
+		return l1GasPrice, errors.New("gas price is stale")
 	}
 	return
 }

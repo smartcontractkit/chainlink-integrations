@@ -17,5 +17,5 @@ func TestNewTestChainScopedConfigOverride(t *testing.T) {
 	// Overrides values
 	assert.Equal(t, uint32(100), c.EVM().FinalityDepth())
 	// fallback.toml values
-	assert.Equal(t, false, c.EVM().GasEstimator().EIP1559DynamicFees())
+	assert.False(t, c.EVM().GasEstimator().EIP1559DynamicFees())
 }
