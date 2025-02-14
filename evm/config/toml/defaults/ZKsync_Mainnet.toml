@@ -19,4 +19,4 @@ OracleType = 'zksync'
 HistoryDepth = 50
 
 [OCR2.Automation]
-GasLimit = 6_000_000
+GasLimit = 11_000_000
