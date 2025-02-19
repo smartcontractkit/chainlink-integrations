@@ -24,6 +24,7 @@ import (
 	commonconfig "github.com/smartcontractkit/chainlink-common/pkg/config"
 	"github.com/smartcontractkit/chainlink-common/pkg/logger"
 	"github.com/smartcontractkit/chainlink-common/pkg/services"
+	"github.com/smartcontractkit/chainlink-common/pkg/types"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils/mailbox"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils/mailbox/mailboxtest"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils/tests"
@@ -1125,26 +1126,36 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 
 	t.Run("verifies finalized block hashes when finality tag is enabled", func(t *testing.T) {
 		htu := newHeadTrackerUniverse(t, opts{Heads: []*evmtypes.Head{h15}, FinalityTagEnabled: true, FinalizedBlockOffset: 2})
-		htu.ethClient.On("HeadByNumber", mock.Anything, big.NewInt(13)).Return(h13, nil).Once()
+		htu.ethClient.On("HeadByNumber", mock.Anything, big.NewInt(13)).Return(h13, nil).Maybe()
+		htu.ethClient.On("HeadByNumber", mock.Anything, big.NewInt(12)).Return(h12, nil).Maybe()
+		htu.ethClient.On("HeadByNumber", mock.Anything, big.NewInt(11)).Return(h11, nil).Maybe()
+		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(h14, nil)
+		htu.ethClient.On("HeadByHash", mock.Anything, h14.Hash).Return(h14, nil).Maybe()
+		htu.ethClient.On("HeadByHash", mock.Anything, h13.Hash).Return(h13, nil).Maybe()
+		htu.ethClient.On("HeadByHash", mock.Anything, h12.Hash).Return(h12, nil).Maybe()
 
-		htu.ethClient.On("HeadByHash", mock.Anything, h14.Hash).Return(h14, nil).Once()
-		htu.ethClient.On("HeadByHash", mock.Anything, h13.Hash).Return(h13, nil).Once()
-		//err := htu.headTracker.Backfill(ctx, h, h5) // TODO: Ensure verification fails; need to use finalized heads
-		//require.ErrorIs(t, err, types.ErrFinalityViolated)
+		// Finality violation due to previously seen finalized block higher than current
+		err := htu.headTracker.Backfill(ctx, h12, h14)
+		require.ErrorIs(t, err, types.ErrFinalityViolated)
 
-		err := htu.headTracker.Backfill(ctx, h15, h14) // TODO: Verify
+		// Valid
+		err = htu.headTracker.Backfill(ctx, h14, h12)
 		require.NoError(t, err)
 
-		h := htu.headSaver.LatestChain()
-		// h - must contain 15, 14, 13, only 13 is finalized
-		assert.Equal(t, 3, int(h.ChainLength()))
-		for ; h.Hash != h13.Hash; h = h.Parent.Load() {
-			assert.False(t, h.IsFinalized.Load())
-		}
+		// Create invalid chain with block mismatch
+		invalid11 := testutils.Head(11)
+		invalid11.IsFinalized.Store(true)
+		invalid11.Parent.Store(h1)
 
-		assert.True(t, h.IsFinalized.Load())
-		assert.Equal(t, h13.BlockNumber(), h.BlockNumber())
-		assert.Equal(t, h13.Hash, h.Hash)
+		invalid12 := testutils.Head(12)
+		invalid12.Hash = h12.Hash
+		invalid12.IsFinalized.Store(true)
+		invalid12.Parent.Store(invalid11)
+		invalid12.ParentHash = invalid11.Hash
+
+		// Finality violation error due to block hash mismatch
+		err = htu.headTracker.Backfill(ctx, h12, invalid12)
+		require.ErrorIs(t, err, types.ErrFinalityViolated)
 	})
 }
 
