@@ -1,0 +1,17 @@
+ChainID = 16600
+FinalityDepth = 50
+FinalityTagEnabled = false
+LogBackfillBatchSize = 100
+LogBroadcasterEnabled = false
+LogPollInterval = "10s"
+NoNewFinalizedHeadsThreshold = '2m'
+NoNewHeadsThreshold = '2m'
+
+[GasEstimator]
+BumpMin = "5 mwei"
+BumpPercent = 20
+EIP1559DynamicFees = false
+PriceMin = "0"
+
+[NodePool]
+NewHeadsPollInterval = "4s"

@@ -1,0 +1,14 @@
+ChainID = 240
+ChainType = "zksync"
+FinalityDepth = 1
+LogPollInterval = "5s"
+NoNewHeadsThreshold = "15m"
+
+[GasEstimator]
+EIP1559DynamicFees = false
+PriceMin = "0"
+[GasEstimator.BlockHistory]
+BlockHistorySize = 10
+
+[HeadTracker]
+HistoryDepth = 100

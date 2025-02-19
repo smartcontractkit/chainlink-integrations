@@ -1,0 +1,10 @@
+ChainID = 98864
+FinalityTagEnabled = true
+LogBackfillBatchSize = 100
+LogPollInterval = "5s"
+NoNewFinalizedHeadsThreshold = '2m'
+NoNewHeadsThreshold = '2m'
+
+[GasEstimator]
+Mode = 'FeeHistory'
+EIP1559DynamicFees = true
