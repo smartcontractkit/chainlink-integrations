@@ -891,7 +891,7 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 	t.Run("returns error if failed to get latestFinalized block", func(t *testing.T) {
 		htu := newHeadTrackerUniverse(t, opts{FinalityTagEnabled: true})
 		const expectedError = "failed to fetch latest finalized block"
-		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(nil, errors.New(expectedError))
+		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(nil, errors.New(expectedError)).Once()
 
 		err := htu.Backfill(ctx, h12)
 		require.ErrorContains(t, err, expectedError)
@@ -1128,6 +1128,7 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 		htu := newHeadTrackerUniverse(t, opts{Heads: []*evmtypes.Head{h15}, FinalityTagEnabled: true, FinalizedBlockOffset: 2})
 		htu.ethClient.On("HeadByNumber", mock.Anything, big.NewInt(12)).Return(h12, nil).Maybe()
 		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(h14, nil)
+		htu.Start(t)
 
 		// Invalid chain with block mismatch
 		invalid11 := testutils.Head(11)
@@ -1137,12 +1138,19 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 
 		invalid12 := testutils.Head(12)
 		invalid12.Hash = h12.Hash // Use hash from valid head
-		invalid12.IsFinalized.Store(true)
 		invalid12.Parent.Store(invalid11)
 		invalid12.ParentHash = invalid11.Hash
 
 		err := htu.headTracker.Backfill(ctx, h12, invalid12)
 		require.ErrorIs(t, err, types.ErrFinalityViolated)
+
+		g := gomega.NewWithT(t)
+		g.Eventually(func() bool {
+			report := htu.headTracker.HealthReport()
+			return slices.ContainsFunc(maps.Values(report), func(e error) bool {
+				return errors.Is(e, types.ErrFinalityViolated)
+			})
+		}, 5*time.Second, tests.TestInterval).Should(gomega.BeTrue())
 	})
 }
 
