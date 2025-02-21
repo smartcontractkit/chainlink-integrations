@@ -206,6 +206,18 @@ func TestHeadTracker_Start_NewHeads(t *testing.T) {
 	ht.Start(t)
 
 	<-chStarted
+
+	t.Run("Finality violation", func(t *testing.T) {
+		ch <- testutils.Head(1) // Deliver head with finalized block hash mismatch
+
+		g := gomega.NewWithT(t)
+		g.Eventually(func() bool {
+			report := ht.headTracker.HealthReport()
+			return slices.ContainsFunc(maps.Values(report), func(e error) bool {
+				return errors.Is(e, types.ErrFinalityViolated)
+			})
+		}, 5*time.Second, tests.TestInterval).Should(gomega.BeTrue())
+	})
 }
 
 func TestHeadTracker_Start(t *testing.T) {
