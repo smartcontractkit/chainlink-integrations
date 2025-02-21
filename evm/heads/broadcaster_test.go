@@ -61,8 +61,8 @@ func TestHeadBroadcaster_Subscribe(t *testing.T) {
 		}).
 		Return((<-chan *evmtypes.Head)(chHead), sub, nil)
 
-	h1 := testutils.Head(1)
-	ethClient.On("HeadByNumber", mock.Anything, mock.Anything).Return(h1, nil)
+	h := testutils.Head(1)
+	ethClient.On("HeadByNumber", mock.Anything, mock.Anything).Return(h, nil)
 
 	sub.On("Unsubscribe").Return()
 	sub.On("Err").Return(nil)
@@ -84,18 +84,18 @@ func TestHeadBroadcaster_Subscribe(t *testing.T) {
 	assert.Equal(t, (*evmtypes.Head)(nil), latest1)
 
 	headers := <-chchHeaders
-	headers <- h1
+	headers <- h
 	g.Eventually(checker1.OnNewLongestChainCount).Should(gomega.Equal(int32(1)))
 
 	latest2, _ := hb.Subscribe(checker2)
 	// "latest head" is set here to the most recent head received
 	assert.NotNil(t, latest2)
-	assert.Equal(t, h1.Number, latest2.Number)
+	assert.Equal(t, h.Number, latest2.Number)
 
 	unsubscribe1()
 
-	h2 := &evmtypes.Head{Number: 2, Hash: utils.NewHash(), ParentHash: h1.Hash, EVMChainID: big.New(testutils.FixtureChainID)}
-	h2.Parent.Store(h1)
+	h2 := &evmtypes.Head{Number: 2, Hash: utils.NewHash(), ParentHash: h.Hash, EVMChainID: big.New(testutils.FixtureChainID)}
+	h2.Parent.Store(h)
 	headers <- h2
 	g.Eventually(checker2.OnNewLongestChainCount).Should(gomega.Equal(int32(1)))
 }
