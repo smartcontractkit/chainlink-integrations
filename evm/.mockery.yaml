@@ -38,9 +38,6 @@ packages:
       l1OracleClient:
         config:
           mockname: L1OracleClient
-  github.com/smartcontractkit/chainlink-integrations/evm/keystore:
-    interfaces:
-      Eth:
   github.com/smartcontractkit/chainlink-integrations/evm/monitor:
     interfaces:
       BalanceMonitor:
