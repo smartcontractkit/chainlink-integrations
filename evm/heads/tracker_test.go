@@ -1246,18 +1246,22 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(h14, nil)
 		htu.Start(t)
 
+		finalized12 := testutils.Head(12)
+		finalized12.IsFinalized.Store(true)
+		finalized12.Parent.Store(h11)
+		finalized12.ParentHash = h11.Hash
+
 		// Invalid chain with block mismatch
-		invalid11 := testutils.Head(11)
-		invalid11.IsFinalized.Store(true)
-		invalid11.Parent.Store(h1) // Mismatch with incorrect parent
-		invalid11.ParentHash = h1.Hash
-
 		invalid12 := testutils.Head(12)
-		invalid12.Hash = h12.Hash // Use hash from valid head
-		invalid12.Parent.Store(invalid11)
-		invalid12.ParentHash = invalid11.Hash
+		invalid12.IsFinalized.Store(true)
+		invalid12.Parent.Store(h1) // Mismatch with incorrect parent
+		invalid12.ParentHash = h1.Hash
 
-		err := htu.headTracker.Backfill(ctx, h12, invalid12)
+		invalid13 := testutils.Head(12)
+		invalid13.Parent.Store(invalid12)
+		invalid13.ParentHash = invalid12.Hash
+
+		err := htu.headTracker.Backfill(ctx, invalid13, finalized12)
 		require.ErrorIs(t, err, types.ErrFinalityViolated)
 
 		g := gomega.NewWithT(t)
