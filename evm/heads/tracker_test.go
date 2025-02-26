@@ -1031,7 +1031,7 @@ func testHeadTrackerBackfill(t *testing.T, newORM func(t *testing.T) evmheads.OR
 		htu.ethClient.On("LatestFinalizedBlock", mock.Anything).Return(h14Orphaned, nil).Once()
 
 		err := htu.Backfill(ctx, h12)
-		require.EqualError(t, err, "invariant violation: expected head of canonical chain to be ahead of the latestFinalized")
+		require.EqualError(t, err, "expected head of canonical chain to be ahead of the latestFinalized, but this may be normal on chains with fast finality due to fetch timing")
 	})
 	t.Run("Returns error if finalizedHead is not present in the canonical chain", func(t *testing.T) {
 		htu := newHeadTrackerUniverse(t, opts{Heads: hs, FinalityTagEnabled: true})
