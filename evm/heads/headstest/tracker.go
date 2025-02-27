@@ -23,17 +23,17 @@ func (_m *Tracker[H, BLOCK_HASH]) EXPECT() *Tracker_Expecter[H, BLOCK_HASH] {
 	return &Tracker_Expecter[H, BLOCK_HASH]{mock: &_m.Mock}
 }
 
-// Backfill provides a mock function with given fields: ctx, headWithChain
-func (_m *Tracker[H, BLOCK_HASH]) Backfill(ctx context.Context, headWithChain H) error {
-	ret := _m.Called(ctx, headWithChain)
+// Backfill provides a mock function with given fields: ctx, headWithChain, prevHeadWithChain
+func (_m *Tracker[H, BLOCK_HASH]) Backfill(ctx context.Context, headWithChain H, prevHeadWithChain H) error {
+	ret := _m.Called(ctx, headWithChain, prevHeadWithChain)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Backfill")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, H) error); ok {
-		r0 = rf(ctx, headWithChain)
+	if rf, ok := ret.Get(0).(func(context.Context, H, H) error); ok {
+		r0 = rf(ctx, headWithChain, prevHeadWithChain)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,13 +49,14 @@ type Tracker_Backfill_Call[H chains.Head[BLOCK_HASH], BLOCK_HASH chains.Hashable
 // Backfill is a helper method to define mock.On call
 //   - ctx context.Context
 //   - headWithChain H
-func (_e *Tracker_Expecter[H, BLOCK_HASH]) Backfill(ctx interface{}, headWithChain interface{}) *Tracker_Backfill_Call[H, BLOCK_HASH] {
-	return &Tracker_Backfill_Call[H, BLOCK_HASH]{Call: _e.mock.On("Backfill", ctx, headWithChain)}
+//   - prevHeadWithChain H
+func (_e *Tracker_Expecter[H, BLOCK_HASH]) Backfill(ctx interface{}, headWithChain interface{}, prevHeadWithChain interface{}) *Tracker_Backfill_Call[H, BLOCK_HASH] {
+	return &Tracker_Backfill_Call[H, BLOCK_HASH]{Call: _e.mock.On("Backfill", ctx, headWithChain, prevHeadWithChain)}
 }
 
-func (_c *Tracker_Backfill_Call[H, BLOCK_HASH]) Run(run func(ctx context.Context, headWithChain H)) *Tracker_Backfill_Call[H, BLOCK_HASH] {
+func (_c *Tracker_Backfill_Call[H, BLOCK_HASH]) Run(run func(ctx context.Context, headWithChain H, prevHeadWithChain H)) *Tracker_Backfill_Call[H, BLOCK_HASH] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(H))
+		run(args[0].(context.Context), args[1].(H), args[2].(H))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *Tracker_Backfill_Call[H, BLOCK_HASH]) Return(err error) *Tracker_Backf
 	return _c
 }
 
-func (_c *Tracker_Backfill_Call[H, BLOCK_HASH]) RunAndReturn(run func(context.Context, H) error) *Tracker_Backfill_Call[H, BLOCK_HASH] {
+func (_c *Tracker_Backfill_Call[H, BLOCK_HASH]) RunAndReturn(run func(context.Context, H, H) error) *Tracker_Backfill_Call[H, BLOCK_HASH] {
 	_c.Call.Return(run)
 	return _c
 }
