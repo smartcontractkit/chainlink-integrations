@@ -17,10 +17,10 @@ import (
 	"github.com/smartcontractkit/chainlink-common/pkg/services"
 	"github.com/smartcontractkit/chainlink-common/pkg/utils"
 	"github.com/smartcontractkit/chainlink-framework/chains/heads"
+	"github.com/smartcontractkit/chainlink-integrations/evm/keys"
 
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	evmclient "github.com/smartcontractkit/chainlink-integrations/evm/client"
-	"github.com/smartcontractkit/chainlink-integrations/evm/keystore"
 	evmtypes "github.com/smartcontractkit/chainlink-integrations/evm/types"
 )
 
@@ -38,9 +38,8 @@ type (
 		eng *services.Engine
 
 		ethClient      evmclient.Client
-		chainID        *big.Int
 		chainIDStr     string
-		ethKeyStore    keystore.Eth
+		ethKeyStore    keys.AddressLister
 		ethBalances    map[common.Address]*assets.Eth
 		ethBalancesMtx sync.RWMutex
 		sleeperTask    *utils.SleeperTask
@@ -52,12 +51,10 @@ type (
 var _ BalanceMonitor = (*balanceMonitor)(nil)
 
 // NewBalanceMonitor returns a new balanceMonitor
-func NewBalanceMonitor(ethClient evmclient.Client, ethKeyStore keystore.Eth, lggr logger.Logger) *balanceMonitor {
-	chainId := ethClient.ConfiguredChainID()
+func NewBalanceMonitor(ethClient evmclient.Client, ethKeyStore keys.AddressLister, lggr logger.Logger) *balanceMonitor {
 	bm := &balanceMonitor{
 		ethClient:   ethClient,
-		chainID:     chainId,
-		chainIDStr:  chainId.String(),
+		chainIDStr:  ethClient.ConfiguredChainID().String(),
 		ethKeyStore: ethKeyStore,
 		ethBalances: make(map[common.Address]*assets.Eth),
 	}
@@ -148,7 +145,7 @@ func (*worker) Name() string {
 }
 
 func (w *worker) Work(ctx context.Context) {
-	enabledAddresses, err := w.bm.ethKeyStore.EnabledAddressesForChain(ctx, w.bm.chainID)
+	enabledAddresses, err := w.bm.ethKeyStore.EnabledAddresses(ctx)
 	if err != nil {
 		w.bm.eng.Error("BalanceMonitor: error getting keys", err)
 	}
