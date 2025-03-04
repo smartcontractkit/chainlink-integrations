@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func NewClientWithDefaultChainID(t *testing.T) *Client {
+func NewClientWithDefaultChainID(t testing.TB) *Client {
 	c := NewClient(t)
 	c.On("ConfiguredChainID").Return(big.NewInt(0)).Maybe()
 	return c
