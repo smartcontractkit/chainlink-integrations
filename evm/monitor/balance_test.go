@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/onsi/gomega"
 	pkgerrors "github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,7 @@ import (
 
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	"github.com/smartcontractkit/chainlink-integrations/evm/client/clienttest"
-	ksmocks "github.com/smartcontractkit/chainlink-integrations/evm/keystore/mocks"
+	"github.com/smartcontractkit/chainlink-integrations/evm/keys/keystest"
 	"github.com/smartcontractkit/chainlink-integrations/evm/monitor"
 	"github.com/smartcontractkit/chainlink-integrations/evm/testutils"
 )
@@ -37,11 +36,9 @@ func TestBalanceMonitor_Start(t *testing.T) {
 	t.Parallel()
 
 	t.Run("updates balance from nil for multiple keys", func(t *testing.T) {
-		ethKeyStore := ksmocks.NewEth(t)
 		k0Addr := testutils.NewAddress()
 		k1Addr := testutils.NewAddress()
-		ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-			Return([]common.Address{k0Addr, k1Addr}, nil)
+		ethKeyStore := keystest.Addresses{k0Addr, k1Addr}
 		ethClient := newEthClientMock(t)
 
 		bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
@@ -65,10 +62,8 @@ func TestBalanceMonitor_Start(t *testing.T) {
 	})
 
 	t.Run("handles nil head", func(t *testing.T) {
-		ethKeyStore := ksmocks.NewEth(t)
 		k0Addr := testutils.NewAddress()
-		ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-			Return([]common.Address{k0Addr}, nil)
+		ethKeyStore := keystest.Addresses{k0Addr}
 		ethClient := newEthClientMock(t)
 
 		bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
@@ -84,10 +79,8 @@ func TestBalanceMonitor_Start(t *testing.T) {
 	})
 
 	t.Run("cancelled context", func(t *testing.T) {
-		ethKeyStore := ksmocks.NewEth(t)
 		k0Addr := testutils.NewAddress()
-		ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-			Return([]common.Address{k0Addr}, nil)
+		ethKeyStore := keystest.Addresses{k0Addr}
 		ethClient := newEthClientMock(t)
 
 		bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
@@ -113,10 +106,8 @@ func TestBalanceMonitor_Start(t *testing.T) {
 	})
 
 	t.Run("recovers on error", func(t *testing.T) {
-		ethKeyStore := ksmocks.NewEth(t)
 		k0Addr := testutils.NewAddress()
-		ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-			Return([]common.Address{k0Addr}, nil)
+		ethKeyStore := keystest.Addresses{k0Addr}
 		ethClient := newEthClientMock(t)
 
 		bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
@@ -137,11 +128,9 @@ func TestBalanceMonitor_OnNewLongestChain_UpdatesBalance(t *testing.T) {
 	t.Parallel()
 
 	t.Run("updates balance for multiple keys", func(t *testing.T) {
-		ethKeyStore := ksmocks.NewEth(t)
 		k0Addr := testutils.NewAddress()
 		k1Addr := testutils.NewAddress()
-		ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-			Return([]common.Address{k0Addr, k1Addr}, nil)
+		ethKeyStore := keystest.Addresses{k0Addr, k1Addr}
 		ethClient := newEthClientMock(t)
 
 		bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
@@ -187,10 +176,7 @@ func TestBalanceMonitor_OnNewLongestChain_UpdatesBalance(t *testing.T) {
 func TestBalanceMonitor_FewerRPCCallsWhenBehind(t *testing.T) {
 	t.Parallel()
 
-	ethKeyStore := ksmocks.NewEth(t)
-	ethKeyStore.On("EnabledAddressesForChain", mock.Anything, mock.Anything).
-		Return([]common.Address{testutils.NewAddress()}, nil)
-
+	ethKeyStore := keystest.Addresses{testutils.NewAddress()}
 	ethClient := newEthClientMock(t)
 
 	bm := monitor.NewBalanceMonitor(ethClient, ethKeyStore, logger.Test(t))
