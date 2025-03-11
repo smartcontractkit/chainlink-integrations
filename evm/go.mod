@@ -19,6 +19,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/prometheus/client_model v0.6.1
+	github.com/prometheus/common v0.60.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/smartcontractkit/chainlink-common v0.4.2-0.20250130202959-6f1f48342e36
 	github.com/smartcontractkit/chainlink-framework/chains v0.0.0-20250227163723-3c71fefea680
@@ -106,7 +107,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus/common v0.60.1 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
