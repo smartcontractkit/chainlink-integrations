@@ -3,7 +3,7 @@ package client_test
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"math/big"
 	"strings"
 	"testing"
@@ -124,16 +124,16 @@ func TestChainClientMetrics(t *testing.T) {
 
 func dumpMetrics() (string, error) {
 	var writer bytes.Buffer
-	enc := expfmt.NewEncoder(&writer, expfmt.FmtText)
+	enc := expfmt.NewEncoder(&writer, expfmt.NewFormat(expfmt.TypeTextPlain))
 	metrics, err := prometheus.DefaultGatherer.Gather()
 	if err != nil {
-		return "", fmt.Errorf("failed to gather metrics")
+		return "", errors.New("failed to gather metrics")
 	}
 
 	for _, mf := range metrics {
 		err = enc.Encode(mf)
 		if err != nil {
-			return "", fmt.Errorf("failed to encode metric")
+			return "", errors.New("failed to encode metric")
 		}
 	}
 	return writer.String(), nil
