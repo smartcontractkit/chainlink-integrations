@@ -22,7 +22,7 @@ require (
 	github.com/prometheus/common v0.60.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/smartcontractkit/chainlink-common v0.4.2-0.20250130202959-6f1f48342e36
-	github.com/smartcontractkit/chainlink-framework/chains v0.0.0-20250227163723-3c71fefea680
+	github.com/smartcontractkit/chainlink-framework/chains v0.0.0-20250312192925-afaff90222b0
 	github.com/smartcontractkit/chainlink-framework/multinode v0.0.0-20250211162441-3d6cea220efb
 	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/gjson v1.18.0
