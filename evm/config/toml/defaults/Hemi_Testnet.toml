@@ -9,7 +9,7 @@ NoNewHeadsThreshold = '3m'
 # Finalization takes upto 22 minutes, added some buffer
 NoNewFinalizedHeadsThreshold = '30m'
 
-[EVM.GasEstimator]
+[GasEstimator]
 EIP1559DynamicFees = true
 Mode = 'FeeHistory'
 
@@ -17,19 +17,19 @@ Mode = 'FeeHistory'
 # Blocks rate is on anverage of 12-24s 
 CacheTimeout = '10s'
 
-[EVM.GasEstimator.BlockHistory]
+[GasEstimator.BlockHistory]
 # We want to smooth out the gas prices, so we increase the sample size.
 BlockHistorySize = 50
 
 # Blocks are created in batches & sometimes takes upto 2 minutes, increasing this value to avoid resending until the txn is seen
-[EVM.Transactions]
+[Transactions]
 ResendAfterThreshold = '2m'
 
-[EVM.HeadTracker]
+[HeadTracker]
 FinalityTagBypass = false
 
-[EVM.NodePool]
+[NodePool]
 SyncThreshold = 10
 
-[EVM.OCR]
+[OCR]
 ContractConfirmations = 1
