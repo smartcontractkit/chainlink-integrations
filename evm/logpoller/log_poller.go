@@ -300,6 +300,8 @@ func (lp *logPoller) RegisterFilter(ctx context.Context, filter Filter) error {
 	if filter.MaxLogsKept > 0 {
 		lp.countBasedLogPruningActive.Store(true)
 	}
+	lp.lggr.Debugw("registered filter", "name", filter.Name, "filter", filter)
+
 	return nil
 }
 
