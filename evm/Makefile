@@ -1,6 +1,6 @@
 .PHONY: mockery
 mockery: ## Install mockery.
-	go install github.com/vektra/mockery/v2@v2.52.1
+	go install github.com/vektra/mockery/v2@v2.53.3
 
 .PHONY: codecgen
 codecgen: ## Install codecgen
