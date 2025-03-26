@@ -2,12 +2,13 @@ ChainID = 98866
 FinalityTagEnabled = true
 # block_time: 4s, adding 1 second buffer 
 LogPollInterval = "5s"
-NoNewFinalizedHeadsThreshold = '2m'
+# posting to L1 every ~12 hours
+NoNewFinalizedHeadsThreshold = '13h'
 NoNewHeadsThreshold = '2m'
 
 [GasEstimator]
 Mode = 'FeeHistory'
-EIP1559DynamicFees = true
+EIP1559DynamicFees = false
 PriceMin = "0"
 BumpMin = "5 mwei"
 PriceMax = '1000 gwei'
