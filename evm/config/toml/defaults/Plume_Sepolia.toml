@@ -1,0 +1,17 @@
+ChainID = 98867
+FinalityTagEnabled = true
+# block_time: 6s, adding 1 second buffer 
+LogPollInterval = "7s"
+NoNewFinalizedHeadsThreshold = '2m'
+NoNewHeadsThreshold = '2m'
+
+[GasEstimator]
+Mode = 'FeeHistory'
+EIP1559DynamicFees = true
+PriceMin = "0"
+BumpMin = "5 mwei"
+PriceMax = '1000 gwei'
+
+[GasEstimator.FeeHistory]
+# block_time was: 6s, per recommendation skip 1-2 blocks
+CacheTimeout = '12s'
