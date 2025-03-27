@@ -1,6 +1,7 @@
 ChainID = 98866
 FinalityTagEnabled = true
-# block_time: 4s, adding 1 second buffer 
+
+# block_time is dynamic
 LogPollInterval = "5s"
 # posting to L1 every ~12 hours
 NoNewFinalizedHeadsThreshold = '13h'
@@ -14,5 +15,5 @@ BumpMin = "5 mwei"
 PriceMax = '1000 gwei'
 
 [GasEstimator.FeeHistory]
-# block_time was: 4s, per recommendation skip 1-2 blocks
-CacheTimeout = '8s'
+# block_time is dynamic
+CacheTimeout = '4s'
