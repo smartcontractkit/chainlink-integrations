@@ -1055,6 +1055,7 @@ type NodePool struct {
 	EnforceRepeatableRead      *bool
 	DeathDeclarationDelay      *commonconfig.Duration
 	NewHeadsPollInterval       *commonconfig.Duration
+	VerifyChainID              *bool
 }
 
 func (p *NodePool) setFrom(f *NodePool) {
@@ -1090,6 +1091,10 @@ func (p *NodePool) setFrom(f *NodePool) {
 
 	if v := f.NewHeadsPollInterval; v != nil {
 		p.NewHeadsPollInterval = v
+	}
+
+	if v := f.VerifyChainID; v != nil {
+		p.VerifyChainID = v
 	}
 
 	p.Errors.setFrom(&f.Errors)
