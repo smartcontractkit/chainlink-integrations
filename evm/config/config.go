@@ -201,6 +201,7 @@ type NodePool interface {
 	EnforceRepeatableRead() bool
 	DeathDeclarationDelay() time.Duration
 	NewHeadsPollInterval() time.Duration
+	VerifyChainID() bool
 }
 
 type ChainScopedConfig interface {
