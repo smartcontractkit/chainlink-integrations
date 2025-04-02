@@ -116,6 +116,10 @@ func (tc TestNodePoolConfig) NewHeadsPollInterval() time.Duration {
 	return tc.NodeNewHeadsPollInterval
 }
 
+func (tc TestNodePoolConfig) VerifyChainID() bool {
+	return true
+}
+
 func (tc TestNodePoolConfig) Errors() config.ClientErrors {
 	return tc.NodeErrors
 }

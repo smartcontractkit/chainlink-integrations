@@ -42,6 +42,10 @@ func (n *NodePoolConfig) NewHeadsPollInterval() time.Duration {
 	return n.C.NewHeadsPollInterval.Duration()
 }
 
+func (n *NodePoolConfig) VerifyChainID() bool {
+	return true
+}
+
 func (n *NodePoolConfig) Errors() ClientErrors { return &clientErrorsConfig{c: n.C.Errors} }
 
 func (n *NodePoolConfig) EnforceRepeatableRead() bool {
