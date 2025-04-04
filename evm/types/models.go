@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -254,6 +255,20 @@ func (h *Head) AsSlice(k int) (heads []*Head) {
 	return
 }
 
+// Hash represents the 32 byte Keccak256 hash of arbitrary data.
+// Mainly to add compatibility with Tron as some hashes are returned as 0x
+type LessStrictHash [32]byte
+
+// UnmarshalJSON parses a hash in hex syntax.
+func (h *LessStrictHash) UnmarshalJSON(input []byte) error {
+	if len(input) == 2 {
+		input = utils.ZeroAddress.Bytes()
+	}
+	return hexutil.UnmarshalFixedJSON(reflect.TypeOf(LessStrictHash{}), input, h[:])
+}
+
+func (h LessStrictHash) Bytes() []byte { return h[:] }
+
 func (h *Head) UnmarshalJSON(bs []byte) error {
 	type head struct {
 		Hash             common.Hash    `json:"hash"`
@@ -264,7 +279,7 @@ func (h *Head) UnmarshalJSON(bs []byte) error {
 		BaseFeePerGas    *hexutil.Big   `json:"baseFeePerGas"`
 		ReceiptsRoot     common.Hash    `json:"receiptsRoot"`
 		TransactionsRoot common.Hash    `json:"transactionsRoot"`
-		StateRoot        common.Hash    `json:"stateRoot"`
+		StateRoot        LessStrictHash `json:"stateRoot"`
 		Difficulty       *hexutil.Big   `json:"difficulty"`
 		TotalDifficulty  *hexutil.Big   `json:"totalDifficulty"`
 	}
@@ -290,7 +305,7 @@ func (h *Head) UnmarshalJSON(bs []byte) error {
 	}
 	h.ReceiptsRoot = jsonHead.ReceiptsRoot
 	h.TransactionsRoot = jsonHead.TransactionsRoot
-	h.StateRoot = jsonHead.StateRoot
+	h.StateRoot = common.BytesToHash(jsonHead.StateRoot.Bytes())
 	h.Difficulty = jsonHead.Difficulty.ToInt()
 	h.TotalDifficulty = jsonHead.TotalDifficulty.ToInt()
 	return nil
