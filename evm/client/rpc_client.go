@@ -818,8 +818,8 @@ func (r *RPCClient) PendingSequenceAt(ctx context.Context, account common.Addres
 	start := time.Now()
 	var n uint64
 	if r.isTron() {
-		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &n, "eth_getTransactionCount", account, "pending"))
-		nonce = evmtypes.Nonce(int64(n))
+		// Tron doesn't support eth_getTransactionCount, lets return 0. We might need to do some logic within the txm to handle this for tron
+		nonce = evmtypes.Nonce(0)
 	} else if http != nil {
 		n, err = http.geth.PendingNonceAt(ctx, account)
 		nonce = evmtypes.Nonce(int64(n))
