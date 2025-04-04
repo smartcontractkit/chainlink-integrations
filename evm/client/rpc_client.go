@@ -849,7 +849,8 @@ func (r *RPCClient) NonceAt(ctx context.Context, account common.Address, blockNu
 	lggr.Debug("RPC call: evmclient.Client#NonceAt")
 	start := time.Now()
 	if r.isTron() {
-		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &nonce, "eth_getTransactionCount", account, ToBlockNumArg(blockNumber)))
+		// Tron doesn't support eth_getTransactionCount, lets return 0. We might need to do some logic within the txm to handle this for tron
+		nonce = 0
 	} else if http != nil {
 		nonce, err = http.geth.NonceAt(ctx, account, blockNumber)
 		err = r.wrapHTTP(err)
