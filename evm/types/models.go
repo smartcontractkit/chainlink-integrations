@@ -261,12 +261,13 @@ type LessStrictHash [32]byte
 
 // UnmarshalJSON parses a hash in hex syntax.
 func (h *LessStrictHash) UnmarshalJSON(input []byte) error {
-	if len(input) == 2 || len(input) == 0 {
+	// "0x00" or "0x" or []byte{}
+	if len(input) == 6 || len(input) == 4 || len(input) == 0 {
 		h.SetBytes(utils.ZeroAddress.Bytes())
 		return nil
 	}
 
-	// If the input is not 2 or 0 bytes, we'll assume it's a full hash if it fails here we'll catch it
+	// If the input is not 4 or 0 bytes, we'll assume it's a full hash if it fails here we'll catch it
 	return hexutil.UnmarshalFixedJSON(reflect.TypeOf(LessStrictHash{}), input, h[:])
 }
 
