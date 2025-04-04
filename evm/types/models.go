@@ -271,14 +271,14 @@ func (h LessStrictHash) Bytes() []byte { return h[:] }
 
 func (h *Head) UnmarshalJSON(bs []byte) error {
 	type head struct {
-		Hash             common.Hash    `json:"hash"`
+		Hash             LessStrictHash `json:"hash"`
 		Number           *hexutil.Big   `json:"number"`
-		ParentHash       common.Hash    `json:"parentHash"`
+		ParentHash       LessStrictHash `json:"parentHash"`
 		Timestamp        hexutil.Uint64 `json:"timestamp"`
 		L1BlockNumber    *hexutil.Big   `json:"l1BlockNumber"`
 		BaseFeePerGas    *hexutil.Big   `json:"baseFeePerGas"`
-		ReceiptsRoot     common.Hash    `json:"receiptsRoot"`
-		TransactionsRoot common.Hash    `json:"transactionsRoot"`
+		ReceiptsRoot     LessStrictHash `json:"receiptsRoot"`
+		TransactionsRoot LessStrictHash `json:"transactionsRoot"`
 		StateRoot        LessStrictHash `json:"stateRoot"`
 		Difficulty       *hexutil.Big   `json:"difficulty"`
 		TotalDifficulty  *hexutil.Big   `json:"totalDifficulty"`
@@ -295,16 +295,16 @@ func (h *Head) UnmarshalJSON(bs []byte) error {
 		return nil
 	}
 
-	h.Hash = jsonHead.Hash
+	h.Hash = common.BytesToHash(jsonHead.Hash.Bytes())
 	h.Number = (*big.Int)(jsonHead.Number).Int64()
-	h.ParentHash = jsonHead.ParentHash
+	h.ParentHash = common.BytesToHash(jsonHead.ParentHash.Bytes())
 	h.Timestamp = time.Unix(int64(jsonHead.Timestamp), 0).UTC()
 	h.BaseFeePerGas = assets.NewWei((*big.Int)(jsonHead.BaseFeePerGas))
 	if jsonHead.L1BlockNumber != nil {
 		h.L1BlockNumber = sql.NullInt64{Int64: (*big.Int)(jsonHead.L1BlockNumber).Int64(), Valid: true}
 	}
-	h.ReceiptsRoot = jsonHead.ReceiptsRoot
-	h.TransactionsRoot = jsonHead.TransactionsRoot
+	h.ReceiptsRoot = common.BytesToHash(jsonHead.ReceiptsRoot.Bytes())
+	h.TransactionsRoot = common.BytesToHash(jsonHead.TransactionsRoot.Bytes())
 	h.StateRoot = common.BytesToHash(jsonHead.StateRoot.Bytes())
 	h.Difficulty = jsonHead.Difficulty.ToInt()
 	h.TotalDifficulty = jsonHead.TotalDifficulty.ToInt()
