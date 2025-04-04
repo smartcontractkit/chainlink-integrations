@@ -369,7 +369,24 @@ func (r *RPCClient) BatchCallContext(rootCtx context.Context, b []rpc.BatchElem)
 	lggr.Trace("RPC call: evmclient.Client#BatchCallContext")
 	start := time.Now()
 	var err error
-	if http != nil {
+
+	if r.isTron() {
+		// Convert Ethereum BatchElem to Tron BatchElem
+		tronBatch := make([]tronrpc.BatchElem, len(b))
+		for i, elem := range b {
+			tronBatch[i] = tronrpc.BatchElem{
+				Method: elem.Method,
+				Args:   elem.Args,
+				Result: elem.Result,
+			}
+		}
+		err = r.wrapHTTP(http.tronRpc.BatchCallContext(ctx, tronBatch))
+
+		// Copy results back to original batch elements
+		for i := range b {
+			b[i].Error = tronBatch[i].Error
+		}
+	} else if http != nil {
 		err = r.wrapHTTP(http.rpc.BatchCallContext(ctx, b))
 	} else {
 		err = r.wrapWS(ws.rpc.BatchCallContext(ctx, b))
@@ -487,7 +504,9 @@ func (r *RPCClient) TransactionReceiptGeth(ctx context.Context, txHash common.Ha
 	lggr.Debug("RPC call: evmclient.Client#TransactionReceipt")
 
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &receipt, "eth_getTransactionReceipt", txHash))
+	} else if http != nil {
 		receipt, err = http.geth.TransactionReceipt(ctx, txHash)
 		err = r.wrapHTTP(err)
 	} else {
@@ -510,7 +529,10 @@ func (r *RPCClient) TransactionByHash(ctx context.Context, txHash common.Hash) (
 	lggr.Debug("RPC call: evmclient.Client#TransactionByHash")
 
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var isPending bool
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &tx, "eth_getTransactionByHash", txHash, &isPending))
+	} else if http != nil {
 		tx, _, err = http.geth.TransactionByHash(ctx, txHash)
 		err = r.wrapHTTP(err)
 	} else {
@@ -533,7 +555,9 @@ func (r *RPCClient) HeaderByNumber(ctx context.Context, number *big.Int) (header
 
 	lggr.Debug("RPC call: evmclient.Client#HeaderByNumber")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &header, "eth_getBlockByNumber", ToBlockNumArg(number), false))
+	} else if http != nil {
 		header, err = http.geth.HeaderByNumber(ctx, number)
 		err = r.wrapHTTP(err)
 	} else {
@@ -554,7 +578,9 @@ func (r *RPCClient) HeaderByHash(ctx context.Context, hash common.Hash) (header 
 
 	lggr.Debug("RPC call: evmclient.Client#HeaderByHash")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &header, "eth_getBlockByHash", hash.Hex(), false))
+	} else if http != nil {
 		header, err = http.geth.HeaderByHash(ctx, hash)
 		err = r.wrapHTTP(err)
 	} else {
@@ -659,7 +685,9 @@ func (r *RPCClient) ethGetBlockByNumber(ctx context.Context, number string, resu
 
 	lggr.Debug("RPC call: evmclient.Client#CallContext")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, result, method, args...))
+	} else if http != nil {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, result, method, args...))
 	} else {
 		err = r.wrapWS(ws.rpc.CallContext(ctx, result, method, args...))
@@ -690,7 +718,13 @@ func (r *RPCClient) BlockByHashGeth(ctx context.Context, hash common.Hash) (bloc
 
 	lggr.Debug("RPC call: evmclient.Client#BlockByHash")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var header *types.Header
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &header, "eth_getBlockByHash", hash.Hex(), false))
+		if err == nil && header != nil {
+			block = types.NewBlockWithHeader(header)
+		}
+	} else if http != nil {
 		block, err = http.geth.BlockByHash(ctx, hash)
 		err = r.wrapHTTP(err)
 	} else {
@@ -713,7 +747,13 @@ func (r *RPCClient) BlockByNumberGeth(ctx context.Context, number *big.Int) (blo
 
 	lggr.Debug("RPC call: evmclient.Client#BlockByNumber")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var header *types.Header
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &header, "eth_getBlockByNumber", ToBlockNumArg(number), false))
+		if err == nil && header != nil {
+			block = types.NewBlockWithHeader(header)
+		}
+	} else if http != nil {
 		block, err = http.geth.BlockByNumber(ctx, number)
 		err = r.wrapHTTP(err)
 	} else {
@@ -737,7 +777,9 @@ func (r *RPCClient) SendTransaction(ctx context.Context, tx *types.Transaction) 
 	lggr.Debug("RPC call: evmclient.Client#SendTransaction")
 	start := time.Now()
 	var err error
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, nil, "eth_sendRawTransaction", tx.Hash()))
+	} else if http != nil {
 		err = r.wrapHTTP(http.geth.SendTransaction(ctx, tx))
 	} else {
 		err = r.wrapWS(ws.geth.SendTransaction(ctx, tx))
@@ -775,7 +817,10 @@ func (r *RPCClient) PendingSequenceAt(ctx context.Context, account common.Addres
 	lggr.Debug("RPC call: evmclient.Client#PendingNonceAt")
 	start := time.Now()
 	var n uint64
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &n, "eth_getTransactionCount", account, "pending"))
+		nonce = evmtypes.Nonce(int64(n))
+	} else if http != nil {
 		n, err = http.geth.PendingNonceAt(ctx, account)
 		nonce = evmtypes.Nonce(int64(n))
 		err = r.wrapHTTP(err)
@@ -803,7 +848,9 @@ func (r *RPCClient) NonceAt(ctx context.Context, account common.Address, blockNu
 
 	lggr.Debug("RPC call: evmclient.Client#NonceAt")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &nonce, "eth_getTransactionCount", account, ToBlockNumArg(blockNumber)))
+	} else if http != nil {
 		nonce, err = http.geth.NonceAt(ctx, account, blockNumber)
 		err = r.wrapHTTP(err)
 	} else {
@@ -826,7 +873,13 @@ func (r *RPCClient) PendingCodeAt(ctx context.Context, account common.Address) (
 
 	lggr.Debug("RPC call: evmclient.Client#PendingCodeAt")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexCode hexutil.Bytes
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexCode, "eth_getCode", account, "pending"))
+		if err == nil {
+			code = hexCode
+		}
+	} else if http != nil {
 		code, err = http.geth.PendingCodeAt(ctx, account)
 		err = r.wrapHTTP(err)
 	} else {
@@ -849,7 +902,13 @@ func (r *RPCClient) CodeAt(ctx context.Context, account common.Address, blockNum
 
 	lggr.Debug("RPC call: evmclient.Client#CodeAt")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexCode hexutil.Bytes
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexCode, "eth_getCode", account, ToBlockNumArg(blockNumber)))
+		if err == nil {
+			code = hexCode
+		}
+	} else if http != nil {
 		code, err = http.geth.CodeAt(ctx, account, blockNumber)
 		err = r.wrapHTTP(err)
 	} else {
@@ -873,7 +932,9 @@ func (r *RPCClient) EstimateGas(ctx context.Context, c interface{}) (gas uint64,
 
 	lggr.Debug("RPC call: evmclient.Client#EstimateGas")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &gas, "eth_estimateGas", ToBackwardCompatibleCallArg(call)))
+	} else if http != nil {
 		gas, err = http.geth.EstimateGas(ctx, call)
 		err = r.wrapHTTP(err)
 	} else {
@@ -896,7 +957,13 @@ func (r *RPCClient) SuggestGasPrice(ctx context.Context) (price *big.Int, err er
 
 	lggr.Debug("RPC call: evmclient.Client#SuggestGasPrice")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexPrice hexutil.Big
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexPrice, "eth_gasPrice"))
+		if err == nil {
+			price = (*big.Int)(&hexPrice)
+		}
+	} else if http != nil {
 		price, err = http.geth.SuggestGasPrice(ctx)
 		err = r.wrapHTTP(err)
 	} else {
@@ -921,7 +988,9 @@ func (r *RPCClient) CallContract(ctx context.Context, msg interface{}, blockNumb
 	lggr.Debug("RPC call: evmclient.Client#CallContract")
 	start := time.Now()
 	var hex hexutil.Bytes
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message), ToBackwardCompatibleBlockNumArg(blockNumber)))
+	} else if http != nil {
 		err = http.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message), ToBackwardCompatibleBlockNumArg(blockNumber))
 		err = r.wrapHTTP(err)
 	} else {
@@ -949,7 +1018,9 @@ func (r *RPCClient) PendingCallContract(ctx context.Context, msg interface{}) (v
 	lggr.Debug("RPC call: evmclient.Client#PendingCallContract")
 	start := time.Now()
 	var hex hexutil.Bytes
-	if http != nil {
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message), "pending"))
+	} else if http != nil {
 		err = http.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message), "pending")
 		err = r.wrapHTTP(err)
 	} else {
@@ -981,7 +1052,13 @@ func (r *RPCClient) BlockNumber(ctx context.Context) (height uint64, err error) 
 
 	lggr.Debug("RPC call: evmclient.Client#BlockNumber")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexHeight hexutil.Uint64
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexHeight, "eth_blockNumber"))
+		if err == nil {
+			height = uint64(hexHeight)
+		}
+	} else if http != nil {
 		height, err = http.geth.BlockNumber(ctx)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1004,7 +1081,13 @@ func (r *RPCClient) BalanceAt(ctx context.Context, account common.Address, block
 
 	lggr.Debug("RPC call: evmclient.Client#BalanceAt")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexBalance hexutil.Big
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexBalance, "eth_getBalance", account, ToBlockNumArg(blockNumber)))
+		if err == nil {
+			balance = (*big.Int)(&hexBalance)
+		}
+	} else if http != nil {
 		balance, err = http.geth.BalanceAt(ctx, account, blockNumber)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1027,7 +1110,10 @@ func (r *RPCClient) FeeHistory(ctx context.Context, blockCount uint64, lastBlock
 
 	lggr.Debug("RPC call: evmclient.Client#FeeHistory")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		feeHistory = new(ethereum.FeeHistory)
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &feeHistory, "eth_feeHistory", blockCount, ToBlockNumArg(lastBlock), rewardPercentiles))
+	} else if http != nil {
 		feeHistory, err = http.geth.FeeHistory(ctx, blockCount, lastBlock, rewardPercentiles)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1092,7 +1178,14 @@ func (r *RPCClient) FilterLogs(ctx context.Context, q ethereum.FilterQuery) (l [
 
 	lggr.Debug("RPC call: evmclient.Client#FilterLogs")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		// Convert the query to a format suitable for eth_getLogs
+		arg, err := toFilterArg(q)
+		if err != nil {
+			return nil, err
+		}
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &l, "eth_getLogs", arg))
+	} else if http != nil {
 		l, err = http.geth.FilterLogs(ctx, q)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1152,7 +1245,13 @@ func (r *RPCClient) SuggestGasTipCap(ctx context.Context) (tipCap *big.Int, err 
 
 	lggr.Debug("RPC call: evmclient.Client#SuggestGasTipCap")
 	start := time.Now()
-	if http != nil {
+	if r.isTron() {
+		var hexTipCap hexutil.Big
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexTipCap, "eth_maxPriorityFeePerGas"))
+		if err == nil {
+			tipCap = (*big.Int)(&hexTipCap)
+		}
+	} else if http != nil {
 		tipCap, err = http.geth.SuggestGasTipCap(ctx)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1172,10 +1271,15 @@ func (r *RPCClient) SuggestGasTipCap(ctx context.Context) (tipCap *big.Int, err 
 // the common node.
 func (r *RPCClient) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 	ctx, cancel, ws, http := r.makeLiveQueryCtxAndSafeGetClients(ctx, r.rpcTimeout)
-
 	defer cancel()
 
-	if http != nil {
+	if r.isTron() {
+		var hexChainID hexutil.Big
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hexChainID, "eth_chainId"))
+		if err == nil {
+			chainID = (*big.Int)(&hexChainID)
+		}
+	} else if http != nil {
 		chainID, err = http.geth.ChainID(ctx)
 		err = r.wrapHTTP(err)
 	} else {
@@ -1183,6 +1287,31 @@ func (r *RPCClient) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 		err = r.wrapWS(err)
 	}
 	return
+}
+
+// Helper function to convert FilterQuery to a JSON object as expected by eth_getLogs
+func toFilterArg(q ethereum.FilterQuery) (interface{}, error) {
+	arg := map[string]interface{}{
+		"fromBlock": toBlockNumArg(q.FromBlock),
+		"toBlock":   toBlockNumArg(q.ToBlock),
+		"address":   q.Addresses,
+		"topics":    q.Topics,
+	}
+	if q.FromBlock == nil {
+		arg["fromBlock"] = "latest"
+	}
+	if q.ToBlock == nil {
+		arg["toBlock"] = "latest"
+	}
+	return arg, nil
+}
+
+// Helper function for toFilterArg
+func toBlockNumArg(number *big.Int) string {
+	if number == nil {
+		return "latest"
+	}
+	return hexutil.EncodeBig(number)
 }
 
 // newRqLggr generates a new logger with a unique request ID
@@ -1255,7 +1384,17 @@ func (r *RPCClient) IsSyncing(ctx context.Context) (bool, error) {
 	var syncProgress *ethereum.SyncProgress
 	start := time.Now()
 	var err error
-	if http != nil {
+	if r.isTron() {
+		var isSyncing bool
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &isSyncing, "eth_syncing"))
+		if err == nil {
+			if isSyncing {
+				syncProgress = &ethereum.SyncProgress{}
+			} else {
+				syncProgress = nil
+			}
+		}
+	} else if http != nil {
 		syncProgress, err = http.geth.SyncProgress(ctx)
 		err = r.wrapHTTP(err)
 	} else {
