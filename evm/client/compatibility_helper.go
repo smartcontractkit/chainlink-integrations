@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/smartcontractkit/chainlink-integrations/evm/config/chaintype"
 )
 
 // Needed to support Geth servers < v1.11.0
@@ -29,14 +30,19 @@ func ToBackwardCompatibleBlockNumArg(number *big.Int) string {
 
 // COPIED FROM go-ethereum/ethclient/gethclient - must be kept up to date!
 // Modified to include legacy 'data' as well as 'input' in order to support non-compliant servers.
-func ToBackwardCompatibleCallArg(msg ethereum.CallMsg) interface{} {
+func ToBackwardCompatibleCallArg(msg ethereum.CallMsg, chainType chaintype.ChainType) interface{} {
 	arg := map[string]interface{}{
 		"from": msg.From,
 		"to":   msg.To,
 	}
 	if len(msg.Data) > 0 {
-		arg["input"] = hexutil.Bytes(msg.Data)
-		arg["data"] = hexutil.Bytes(msg.Data) // duplicate legacy field for compatibility
+		if chainType == chaintype.ChainTron {
+			// Tron will reject if input is present, only data is supported
+			arg["data"] = hexutil.Bytes(msg.Data)
+		} else {
+			arg["input"] = hexutil.Bytes(msg.Data)
+			arg["data"] = hexutil.Bytes(msg.Data) // duplicate legacy field for compatibility
+		}
 	}
 	if msg.Value != nil {
 		arg["value"] = (*hexutil.Big)(msg.Value)
