@@ -208,26 +208,32 @@ func (r *RPCClient) DialHTTP() error {
 	lggr.Debugw("RPC dial: evmclient.Client#dial")
 
 	var httprpc *rpc.Client
+	var tronclient *tronrpc.Client
 	if r.chainType == chaintype.ChainTron {
 		// Tron RPC client
-		tronRpc, err := tronrpc.DialHTTP(http.uri.String())
+		rpc, err := tronrpc.DialHTTP(http.uri.String())
 		if err != nil {
 			promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
 			return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing Tron HTTP: %v", http.uri.Redacted()))
 		}
 
-		http.tronRpc = tronRpc
-	} else {
-		rpc, err := rpc.DialHTTP(http.uri.String())
-		if err != nil {
-			promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
-			return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing HTTP: %v", http.uri.Redacted()))
-		}
-
-		httprpc = rpc
+		tronclient = rpc
 	}
 
+	rpc, err := rpc.DialHTTP(http.uri.String())
+	if err != nil {
+		promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
+		return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing HTTP: %v", http.uri.Redacted()))
+	}
+
+	httprpc = rpc
+
 	http.rpc = httprpc
+
+	if tronclient != nil {
+		http.tronRpc = tronclient
+	}
+
 	http.geth = ethclient.NewClient(httprpc)
 
 	promEVMPoolRPCNodeDialsSuccess.WithLabelValues(r.chainID.String(), r.name).Inc()
