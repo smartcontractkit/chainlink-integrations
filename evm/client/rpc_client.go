@@ -30,6 +30,7 @@ import (
 	"github.com/smartcontractkit/chainlink-integrations/evm/assets"
 	"github.com/smartcontractkit/chainlink-integrations/evm/config"
 	"github.com/smartcontractkit/chainlink-integrations/evm/config/chaintype"
+	tronrpc "github.com/smartcontractkit/chainlink-integrations/evm/tron/rpc"
 	evmtypes "github.com/smartcontractkit/chainlink-integrations/evm/types"
 	"github.com/smartcontractkit/chainlink-integrations/evm/utils"
 	ubig "github.com/smartcontractkit/chainlink-integrations/evm/utils/big"
@@ -80,9 +81,10 @@ var (
 const rpcSubscriptionMethodNewHeads = "newHeads"
 
 type rawclient struct {
-	rpc  *rpc.Client
-	geth *ethclient.Client
-	uri  url.URL
+	rpc     *rpc.Client
+	tronRpc *tronrpc.Client
+	geth    *ethclient.Client
+	uri     url.URL
 }
 
 type RPCClient struct {
@@ -206,10 +208,23 @@ func (r *RPCClient) DialHTTP() error {
 	lggr.Debugw("RPC dial: evmclient.Client#dial")
 
 	var httprpc *rpc.Client
-	httprpc, err := rpc.DialHTTP(http.uri.String())
-	if err != nil {
-		promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
-		return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing HTTP: %v", http.uri.Redacted()))
+	if r.chainType == chaintype.ChainTron {
+		// Tron RPC client
+		tronRpc, err := tronrpc.DialHTTP(http.uri.String())
+		if err != nil {
+			promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
+			return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing Tron HTTP: %v", http.uri.Redacted()))
+		}
+
+		http.tronRpc = tronRpc
+	} else {
+		rpc, err := rpc.DialHTTP(http.uri.String())
+		if err != nil {
+			promEVMPoolRPCNodeDialsFailed.WithLabelValues(r.chainID.String(), r.name).Inc()
+			return r.wrapRPCClientError(pkgerrors.Wrapf(err, "error while dialing HTTP: %v", http.uri.Redacted()))
+		}
+
+		httprpc = rpc
 	}
 
 	http.rpc = httprpc
@@ -283,6 +298,10 @@ func (r *RPCClient) getRPCDomain() string {
 	return r.ws.Load().uri.Host
 }
 
+func (r *RPCClient) isTron() bool {
+	return r.chainType == chaintype.ChainTron
+}
+
 // RPC wrappers
 
 // CallContext implementation
@@ -297,7 +316,10 @@ func (r *RPCClient) CallContext(ctx context.Context, result interface{}, method 
 	lggr.Debug("RPC call: evmclient.Client#CallContext")
 	start := time.Now()
 	var err error
-	if http != nil {
+
+	if r.isTron() {
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, result, method, args...))
+	} else if http != nil {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, result, method, args...))
 	} else {
 		err = r.wrapWS(ws.rpc.CallContext(ctx, result, method, args...))
