@@ -30,14 +30,41 @@ func ToBackwardCompatibleBlockNumArg(number *big.Int) string {
 
 // COPIED FROM go-ethereum/ethclient/gethclient - must be kept up to date!
 // Modified to include legacy 'data' as well as 'input' in order to support non-compliant servers.
-func ToBackwardCompatibleCallArg(msg ethereum.CallMsg, chainType chaintype.ChainType) interface{} {
+func ToBackwardCompatibleCallArg(msg ethereum.CallMsg) interface{} {
+	arg := map[string]interface{}{
+		"from": msg.From,
+		"to":   msg.To,
+	}
+	if len(msg.Data) > 0 {
+		arg["input"] = hexutil.Bytes(msg.Data)
+		arg["data"] = hexutil.Bytes(msg.Data) // duplicate legacy field for compatibility
+	}
+	if msg.Value != nil {
+		arg["value"] = (*hexutil.Big)(msg.Value)
+	}
+	if msg.Gas != 0 {
+		arg["gas"] = hexutil.Uint64(msg.Gas)
+	}
+	if msg.GasPrice != nil {
+		arg["gasPrice"] = (*hexutil.Big)(msg.GasPrice)
+	}
+	if msg.GasFeeCap != nil {
+		arg["maxFeePerGas"] = (*hexutil.Big)(msg.GasFeeCap)
+	}
+	if msg.GasTipCap != nil {
+		arg["maxPriorityFeePerGas"] = (*hexutil.Big)(msg.GasTipCap)
+	}
+	return arg
+}
+
+// TODO: Cleanup, and rename this function
+func toBackwardCompatibleCallArgWithTronSupport(msg ethereum.CallMsg, chainType chaintype.ChainType) interface{} {
 	arg := map[string]interface{}{
 		"from": msg.From,
 		"to":   msg.To,
 	}
 	if len(msg.Data) > 0 {
 		if chainType == chaintype.ChainTron {
-			// Tron will reject if input is present, only data is supported
 			arg["data"] = hexutil.Bytes(msg.Data)
 		} else {
 			arg["input"] = hexutil.Bytes(msg.Data)

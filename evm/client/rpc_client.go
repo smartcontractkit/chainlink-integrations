@@ -933,7 +933,7 @@ func (r *RPCClient) EstimateGas(ctx context.Context, c interface{}) (gas uint64,
 	lggr.Debug("RPC call: evmclient.Client#EstimateGas")
 	start := time.Now()
 	if r.isTron() {
-		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &gas, "eth_estimateGas", ToBackwardCompatibleCallArg(call, r.chainType)))
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &gas, "eth_estimateGas", toBackwardCompatibleCallArgWithTronSupport(call, r.chainType)))
 	} else if http != nil {
 		gas, err = http.geth.EstimateGas(ctx, call)
 		err = r.wrapHTTP(err)
@@ -989,12 +989,12 @@ func (r *RPCClient) CallContract(ctx context.Context, msg interface{}, blockNumb
 	start := time.Now()
 	var hex hexutil.Bytes
 	if r.isTron() {
-		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber)))
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber)))
 	} else if http != nil {
-		err = http.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber))
+		err = http.rpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber))
 		err = r.wrapHTTP(err)
 	} else {
-		err = ws.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber))
+		err = ws.rpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), ToBackwardCompatibleBlockNumArg(blockNumber))
 		err = r.wrapWS(err)
 	}
 	if err == nil {
@@ -1019,12 +1019,12 @@ func (r *RPCClient) PendingCallContract(ctx context.Context, msg interface{}) (v
 	start := time.Now()
 	var hex hexutil.Bytes
 	if r.isTron() {
-		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), "pending"))
+		err = r.wrapHTTP(http.tronRpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), "pending"))
 	} else if http != nil {
-		err = http.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), "pending")
+		err = http.rpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), "pending")
 		err = r.wrapHTTP(err)
 	} else {
-		err = ws.rpc.CallContext(ctx, &hex, "eth_call", ToBackwardCompatibleCallArg(message, r.chainType), "pending")
+		err = ws.rpc.CallContext(ctx, &hex, "eth_call", toBackwardCompatibleCallArgWithTronSupport(message, r.chainType), "pending")
 		err = r.wrapWS(err)
 	}
 	if err == nil {
