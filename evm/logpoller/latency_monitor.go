@@ -43,16 +43,16 @@ func NewLatencyMonitor(c LatencyMonitorClient, t LatencyMonitorTracker, lggr log
 }
 
 // latencyMonitoredCall wraps any function and logs a warning if it exceeds the threshold of block production rate
-func latencyMonitoredCall[T any](lmc *LatencyMonitor, name string, fn func() (T, error)) (T, error) {
+func latencyMonitoredCall[T any](lm *LatencyMonitor, name string, fn func() (T, error)) (T, error) {
 	start := time.Now()
 	result, err := fn()
 	latency := time.Since(start)
 
-	threshold := time.Duration(float64(lmc.blockProductionRate) * latencyWarningThreshold)
+	threshold := time.Duration(float64(lm.blockProductionRate) * latencyWarningThreshold)
 	if latency > threshold {
-		lmc.lggr.Warnf(
+		lm.lggr.Warnf(
 			"%s: %s latency of %s exceeded threshold of %s (%.0f%% of block production time %s)",
-			latencyWarning, name, latency, threshold, latencyWarningThreshold*100, lmc.blockProductionRate,
+			latencyWarning, name, latency, threshold, latencyWarningThreshold*100, lm.blockProductionRate,
 		)
 	}
 
