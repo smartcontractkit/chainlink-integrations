@@ -284,8 +284,8 @@ func (r *RPCClient) getRPCDomain() string {
 	return r.ws.Load().uri.Host
 }
 
-func (r *RPCClient) isTron() bool {
-	return r.chainType == chaintype.ChainTron
+func (r *RPCClient) isChainType(chainType chaintype.ChainType) bool {
+	return r.chainType == chainType
 }
 
 // RPC wrappers
@@ -348,7 +348,7 @@ func (r *RPCClient) BatchCallContext(rootCtx context.Context, b []rpc.BatchElem)
 	start := time.Now()
 	var err error
 
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		// Convert Ethereum BatchElem to Tron BatchElem
 		tronBatch := make([]rpc.BatchElem, len(b))
 		for i, elem := range b {
@@ -482,7 +482,7 @@ func (r *RPCClient) TransactionReceiptGeth(ctx context.Context, txHash common.Ha
 	lggr.Debug("RPC call: evmclient.Client#TransactionReceipt")
 
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &receipt, "eth_getTransactionReceipt", txHash))
 	} else if http != nil {
 		receipt, err = http.geth.TransactionReceipt(ctx, txHash)
@@ -507,7 +507,7 @@ func (r *RPCClient) TransactionByHash(ctx context.Context, txHash common.Hash) (
 	lggr.Debug("RPC call: evmclient.Client#TransactionByHash")
 
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		var isPending bool
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &tx, "eth_getTransactionByHash", txHash, &isPending))
 	} else if http != nil {
@@ -533,7 +533,7 @@ func (r *RPCClient) HeaderByNumber(ctx context.Context, number *big.Int) (header
 
 	lggr.Debug("RPC call: evmclient.Client#HeaderByNumber")
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &header, "eth_getBlockByNumber", ToBlockNumArg(number), false))
 	} else if http != nil {
 		header, err = http.geth.HeaderByNumber(ctx, number)
@@ -556,7 +556,7 @@ func (r *RPCClient) HeaderByHash(ctx context.Context, hash common.Hash) (header 
 
 	lggr.Debug("RPC call: evmclient.Client#HeaderByHash")
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &header, "eth_getBlockByHash", hash.Hex(), false))
 	} else if http != nil {
 		header, err = http.geth.HeaderByHash(ctx, hash)
@@ -741,7 +741,7 @@ func (r *RPCClient) SendTransaction(ctx context.Context, tx *types.Transaction) 
 	lggr.Debug("RPC call: evmclient.Client#SendTransaction")
 	start := time.Now()
 	var err error
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		err = fmt.Errorf("SendTransaction not implemented for Tron, this should never be called")
 	} else if http != nil {
 		err = r.wrapHTTP(http.geth.SendTransaction(ctx, tx))
@@ -781,7 +781,7 @@ func (r *RPCClient) PendingSequenceAt(ctx context.Context, account common.Addres
 	lggr.Debug("RPC call: evmclient.Client#PendingNonceAt")
 	start := time.Now()
 	var n uint64
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		// Tron doesn't support eth_getTransactionCount, lets return 0. We might need to do some logic within the txm to handle this for tron
 		nonce = evmtypes.Nonce(0)
 	} else if http != nil {
@@ -812,7 +812,7 @@ func (r *RPCClient) NonceAt(ctx context.Context, account common.Address, blockNu
 
 	lggr.Debug("RPC call: evmclient.Client#NonceAt")
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		// Tron doesn't support eth_getTransactionCount, lets return 0. We might need to do some logic within the txm to handle this for tron
 		nonce = 0
 	} else if http != nil {
@@ -885,7 +885,7 @@ func (r *RPCClient) EstimateGas(ctx context.Context, c interface{}) (gas uint64,
 
 	lggr.Debug("RPC call: evmclient.Client#EstimateGas")
 	start := time.Now()
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &gas, "eth_estimateGas", toBackwardCompatibleCallArgWithTronSupport(call, r.chainType)))
 	} else if http != nil {
 		gas, err = http.geth.EstimateGas(ctx, call)
@@ -1293,7 +1293,7 @@ func (r *RPCClient) IsSyncing(ctx context.Context) (bool, error) {
 	var syncProgress *ethereum.SyncProgress
 	start := time.Now()
 	var err error
-	if r.isTron() {
+	if r.isChainType(chaintype.ChainTron) {
 		var isSyncing bool
 		err = r.wrapHTTP(http.rpc.CallContext(ctx, &isSyncing, "eth_syncing"))
 		if err == nil {
