@@ -256,7 +256,7 @@ func (h *Head) AsSlice(k int) (heads []*Head) {
 }
 
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
-// Mainly to add compatibility with Tron as some hashes are returned as 0x
+// Mainly to add compatibility with Tron as some hashes are returned as 0x00 or 0x
 type LessStrictHash [32]byte
 
 // UnmarshalJSON parses a hash in hex syntax.
@@ -267,7 +267,7 @@ func (h *LessStrictHash) UnmarshalJSON(input []byte) error {
 		return nil
 	}
 
-	// If the input is not 4 or 0 bytes, we'll assume it's a full hash if it fails here we'll catch it
+	// If the input is not 6, 4 or 0 bytes, we'll assume it's a full hash if it fails here we'll catch it
 	return hexutil.UnmarshalFixedJSON(reflect.TypeOf(LessStrictHash{}), input, h[:])
 }
 
