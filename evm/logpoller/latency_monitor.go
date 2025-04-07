@@ -13,7 +13,7 @@ import (
 
 const (
 	latencyWarningThreshold = 0.7 // Warn if latency exceeds 70% of block production rate
-	latencyWarning          = "RPC server is not meeting latency requirements"
+	latencyWarning          = "RPC latency warning: consider using faster endpoints or reviewing network conditions"
 )
 
 type LatencyMonitorClient interface {
@@ -51,7 +51,7 @@ func latencyMonitoredCall[T any](lm *LatencyMonitor, name string, fn func() (T, 
 	threshold := time.Duration(float64(lm.blockProductionRate) * latencyWarningThreshold)
 	if latency > threshold {
 		lm.lggr.Warnf(
-			"%s: %s latency of %s exceeded threshold of %s (%.0f%% of block production time %s)",
+			"%s - %s latency of %s exceeded threshold of %s (%.0f%% of block production time %s)",
 			latencyWarning, name, latency, threshold, latencyWarningThreshold*100, lm.blockProductionRate,
 		)
 	}
