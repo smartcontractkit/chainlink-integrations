@@ -348,23 +348,7 @@ func (r *RPCClient) BatchCallContext(rootCtx context.Context, b []rpc.BatchElem)
 	start := time.Now()
 	var err error
 
-	if r.isChainType(chaintype.ChainTron) {
-		// Convert Ethereum BatchElem to Tron BatchElem
-		tronBatch := make([]rpc.BatchElem, len(b))
-		for i, elem := range b {
-			tronBatch[i] = rpc.BatchElem{
-				Method: elem.Method,
-				Args:   elem.Args,
-				Result: elem.Result,
-			}
-		}
-		err = r.wrapHTTP(http.rpc.BatchCallContext(ctx, tronBatch))
-
-		// Copy results back to original batch elements
-		for i := range b {
-			b[i].Error = tronBatch[i].Error
-		}
-	} else if http != nil {
+	if http != nil {
 		err = r.wrapHTTP(http.rpc.BatchCallContext(ctx, b))
 	} else {
 		err = r.wrapWS(ws.rpc.BatchCallContext(ctx, b))
