@@ -24,6 +24,7 @@ type Store interface {
 	RoundRobin
 	MessageSigner
 	Locker
+	RawUnhashedSigner
 }
 
 // ChainStore extends Store with methods that require a chain ID.
