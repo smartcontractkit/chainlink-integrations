@@ -300,6 +300,13 @@ var monad = ClientErrors{
 	Fatal: regexp.MustCompile("Gas limit too low"),
 }
 
+var rootstockFatal = regexp.MustCompile(`(: |^)transaction's basic cost is above the gas limit`)
+var rootstock = ClientErrors{
+	TransactionAlreadyInMempool:       regexp.MustCompile(`(: |^)pending transaction with same hash already exists`),
+	ReplacementTransactionUnderpriced: regexp.MustCompile(`(: |^)gas price not enough to bump transaction`),
+	Fatal:                             rootstockFatal,
+}
+
 const TerminallyStuckMsg = "transaction terminally stuck"
 
 // Tx.Error messages that are set internally so they are not chain or client specific
@@ -307,7 +314,7 @@ var internal = ClientErrors{
 	TerminallyStuck: regexp.MustCompile(TerminallyStuckMsg),
 }
 
-var clients = []ClientErrors{parity, geth, arbitrum, metis, substrate, avalanche, nethermind, harmony, besu, erigon, klaytn, celo, zkSync, zkEvm, treasure, mantle, aStar, hedera, gnosis, sei, monad, internal}
+var clients = []ClientErrors{parity, geth, arbitrum, metis, substrate, avalanche, nethermind, harmony, besu, erigon, klaytn, celo, zkSync, zkEvm, treasure, mantle, aStar, hedera, gnosis, sei, monad, rootstock, internal}
 
 // ClientErrorRegexes returns a map of compiled regexes for each error type
 func ClientErrorRegexes(errsRegex config.ClientErrors) *ClientErrors {
