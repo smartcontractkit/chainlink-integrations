@@ -11,7 +11,10 @@ import (
 	"github.com/smartcontractkit/chainlink-integrations/evm/types"
 )
 
-const latencyWarningThreshold = 0.7 // Warn if latency exceeds 70% of block production rate
+const (
+	latencyWarningThreshold = 0.7 // Warn if latency exceeds 70% of block production rate
+	latencyWarning          = "RPC server is not meeting latency requirements"
+)
 
 type LatencyMonitorClient interface {
 	HeadByNumber(ctx context.Context, n *big.Int) (*types.Head, error)
@@ -48,8 +51,8 @@ func latencyMonitoredCall[T any](lmc *LatencyMonitor, name string, fn func() (T,
 	threshold := time.Duration(float64(lmc.blockProductionRate) * latencyWarningThreshold)
 	if latency > threshold {
 		lmc.lggr.Warnf(
-			"%s latency of %s exceeded threshold of %s (%.0f%% of block production time %s)",
-			name, latency, threshold, latencyWarningThreshold*100, lmc.blockProductionRate,
+			"%s: %s latency of %s exceeded threshold of %s (%.0f%% of block production time %s)",
+			latencyWarning, name, latency, threshold, latencyWarningThreshold*100, lmc.blockProductionRate,
 		)
 	}
 
