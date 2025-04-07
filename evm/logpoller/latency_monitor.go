@@ -71,7 +71,7 @@ func (lmc *LatencyMonitor) HeadByHash(ctx context.Context, n common.Hash) (*type
 	})
 }
 
-func (lmc *LatencyMonitor) LatestAndFinalizedBlock(ctx context.Context) (latest *types.Head, finalized *types.Head, err error) {
+func (lmc *LatencyMonitor) LatestAndFinalizedBlock(ctx context.Context) (*types.Head, *types.Head, error) {
 	type HeadPair struct {
 		Latest    *types.Head
 		Finalized *types.Head

@@ -168,7 +168,7 @@ func NewLogPoller(orm ORM, ec Client, lggr logger.Logger, headTracker HeadTracke
 		ec:                       ec,
 		orm:                      orm,
 		headTracker:              headTracker,
-		latencyMonitor:           LatencyMonitor{ec, headTracker, lggr, opts.PollPeriod},
+		latencyMonitor:           NewLatencyMonitor(ec, headTracker, lggr, opts.PollPeriod),
 		lggr:                     logger.Sugared(logger.Named(lggr, "LogPoller")),
 		replayStart:              make(chan int64),
 		replayComplete:           make(chan error),
