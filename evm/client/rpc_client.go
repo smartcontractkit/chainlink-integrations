@@ -1182,31 +1182,6 @@ func (r *RPCClient) ChainID(ctx context.Context) (chainID *big.Int, err error) {
 	return
 }
 
-// Helper function to convert FilterQuery to a JSON object as expected by eth_getLogs
-func toFilterArg(q ethereum.FilterQuery) (interface{}, error) {
-	arg := map[string]interface{}{
-		"fromBlock": toBlockNumArg(q.FromBlock),
-		"toBlock":   toBlockNumArg(q.ToBlock),
-		"address":   q.Addresses,
-		"topics":    q.Topics,
-	}
-	if q.FromBlock == nil {
-		arg["fromBlock"] = "latest"
-	}
-	if q.ToBlock == nil {
-		arg["toBlock"] = "latest"
-	}
-	return arg, nil
-}
-
-// Helper function for toFilterArg
-func toBlockNumArg(number *big.Int) string {
-	if number == nil {
-		return "latest"
-	}
-	return hexutil.EncodeBig(number)
-}
-
 // newRqLggr generates a new logger with a unique request ID
 func (r *RPCClient) newRqLggr() logger.SugaredLogger {
 	return r.rpcLog.With("requestID", uuid.New())
