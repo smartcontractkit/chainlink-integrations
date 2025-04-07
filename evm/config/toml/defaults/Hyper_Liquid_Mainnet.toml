@@ -1,1 +1,8 @@
 ChainID = '999'
+LogBroadcasterEnabled = false
+
+[GasEstimator]
+EIP1559DynamicFees = true
+
+[NodePool]
+NewHeadsPollInterval = '5s'
