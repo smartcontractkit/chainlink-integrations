@@ -12,7 +12,7 @@ import (
 
 func NewClientWithDefaultChainID(t testing.TB) *Client {
 	c := NewClient(t)
-	c.On("ConfiguredChainID").Return(big.NewInt(1)).Maybe()
+	c.On("ConfiguredChainID").Return(big.NewInt(0)).Maybe()
 	return c
 }
 
