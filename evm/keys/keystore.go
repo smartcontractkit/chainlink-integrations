@@ -175,11 +175,19 @@ func NewChainStore(ks core.Keystore, chainID *big.Int) ChainStore {
 }
 
 func (s *chainStore) SignTx(ctx context.Context, fromAddress common.Address, tx *types.Transaction) (*types.Transaction, error) {
-	signer := types.LatestSignerForChainID(s.chainID)
+	signer := types.LatestSignerForChainID(s.getChainID())
 	h := signer.Hash(tx)
 	sig, err := s.ks.Sign(ctx, fromAddress.String(), h[:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign transaction: %w", err)
 	}
 	return tx.WithSignature(signer, sig)
+}
+
+func (s *chainStore) getChainID() *big.Int {
+	if s.chainID.Int64() == 0 {
+		return nil
+	}
+
+	return s.chainID
 }
