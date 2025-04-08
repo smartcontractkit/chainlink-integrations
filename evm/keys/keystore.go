@@ -186,7 +186,7 @@ func (s *chainStore) SignTx(ctx context.Context, fromAddress common.Address, tx 
 
 func (s *chainStore) getChainID() *big.Int {
 	if s.chainID.Int64() == 0 {
-		return nil
+		return big.NewInt(1)
 	}
 
 	return s.chainID
