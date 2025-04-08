@@ -7,12 +7,13 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/smartcontractkit/chainlink-integrations/evm/types"
 	"github.com/stretchr/testify/mock"
 )
 
 func NewClientWithDefaultChainID(t testing.TB) *Client {
 	c := NewClient(t)
-	c.On("ConfiguredChainID").Return(big.NewInt(1)).Maybe()
+	c.On("ConfiguredChainID").Return(big.NewInt(types.NullClientChainID)).Maybe()
 	return c
 }
 
