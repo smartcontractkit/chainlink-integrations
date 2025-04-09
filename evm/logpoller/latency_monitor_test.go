@@ -44,7 +44,12 @@ func TestLatencyMonitor(t *testing.T) {
 	client := &mockClient{}
 	tracker := &mockTracker{}
 
-	lm := logpoller.NewLatencyMonitor(client, tracker, lggr, blockProductionRate)
+	opts := logpoller.Opts{
+		PollPeriod:              blockProductionRate,
+		LatencyWarningThreshold: 0.7,
+	}
+
+	lm := logpoller.NewLatencyMonitor(client, tracker, lggr, opts)
 
 	// Slow client with latency 80% of block production rate
 	client.latency = time.Duration(0.8 * float64(blockProductionRate))

@@ -27,18 +27,21 @@ type LatencyMonitorTracker interface {
 
 // LatencyMonitor wraps RPC calls with a warning if the latency exceeds the set threshold of block production rate
 type LatencyMonitor struct {
-	c                   LatencyMonitorClient
-	t                   LatencyMonitorTracker
-	lggr                logger.Logger
-	blockProductionRate time.Duration
+	c    LatencyMonitorClient
+	t    LatencyMonitorTracker
+	lggr logger.Logger
+
+	blockProductionRate     time.Duration
+	latencyWarningThreshold float64
 }
 
-func NewLatencyMonitor(c LatencyMonitorClient, t LatencyMonitorTracker, lggr logger.Logger, blockProductionRate time.Duration) LatencyMonitor {
+func NewLatencyMonitor(c LatencyMonitorClient, t LatencyMonitorTracker, lggr logger.Logger, opts Opts) LatencyMonitor {
 	return LatencyMonitor{
-		c:                   c,
-		t:                   t,
-		lggr:                lggr,
-		blockProductionRate: blockProductionRate,
+		c:                       c,
+		t:                       t,
+		lggr:                    lggr,
+		blockProductionRate:     opts.PollPeriod,
+		latencyWarningThreshold: opts.LatencyWarningThreshold,
 	}
 }
 

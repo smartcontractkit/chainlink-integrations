@@ -149,6 +149,7 @@ type Opts struct {
 	KeepFinalizedBlocksDepth int64
 	BackupPollerBlockDelay   int64
 	LogPrunePageSize         int64
+	LatencyWarningThreshold  float64
 	ClientErrors             config.ClientErrors
 }
 
@@ -168,7 +169,7 @@ func NewLogPoller(orm ORM, ec Client, lggr logger.Logger, headTracker HeadTracke
 		ec:                       ec,
 		orm:                      orm,
 		headTracker:              headTracker,
-		latencyMonitor:           NewLatencyMonitor(ec, headTracker, lggr, opts.PollPeriod),
+		latencyMonitor:           NewLatencyMonitor(ec, headTracker, lggr, opts),
 		lggr:                     logger.Sugared(logger.Named(lggr, "LogPoller")),
 		replayStart:              make(chan int64),
 		replayComplete:           make(chan error),
