@@ -57,34 +57,16 @@ func ToBackwardCompatibleCallArg(msg ethereum.CallMsg) interface{} {
 	return arg
 }
 
-// TODO: Cleanup, and rename this function
 func toBackwardCompatibleCallArgWithTronSupport(msg ethereum.CallMsg, chainType chaintype.ChainType) interface{} {
-	arg := map[string]interface{}{
-		"from": msg.From,
-		"to":   msg.To,
+	backwardsCompatibleCallArg := ToBackwardCompatibleCallArg(msg)
+	callArgs, ok := backwardsCompatibleCallArg.(map[string]interface{})
+	if !ok {
+		return backwardsCompatibleCallArg
 	}
-	if len(msg.Data) > 0 {
-		if chainType == chaintype.ChainTron {
-			arg["data"] = hexutil.Bytes(msg.Data)
-		} else {
-			arg["input"] = hexutil.Bytes(msg.Data)
-			arg["data"] = hexutil.Bytes(msg.Data) // duplicate legacy field for compatibility
-		}
+
+	if chainType == chaintype.ChainTron {
+		delete(callArgs, "input")
 	}
-	if msg.Value != nil {
-		arg["value"] = (*hexutil.Big)(msg.Value)
-	}
-	if msg.Gas != 0 {
-		arg["gas"] = hexutil.Uint64(msg.Gas)
-	}
-	if msg.GasPrice != nil {
-		arg["gasPrice"] = (*hexutil.Big)(msg.GasPrice)
-	}
-	if msg.GasFeeCap != nil {
-		arg["maxFeePerGas"] = (*hexutil.Big)(msg.GasFeeCap)
-	}
-	if msg.GasTipCap != nil {
-		arg["maxPriorityFeePerGas"] = (*hexutil.Big)(msg.GasTipCap)
-	}
-	return arg
+
+	return callArgs
 }
