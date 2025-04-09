@@ -729,7 +729,7 @@ func (r *RPCClient) SendTransaction(ctx context.Context, tx *types.Transaction) 
 	var err error
 
 	if r.isChainType(chaintype.ChainTron) {
-		err = fmt.Errorf("SendTransaction not implemented for Tron, this should never be called")
+		err = errors.New("SendTransaction not implemented for Tron, this should never be called")
 		return struct{}{}, ClassifySendError(err, r.clientErrors, logger.Sugared(logger.Nop()), tx, common.Address{}, r.chainType.IsL2()), err
 	}
 
