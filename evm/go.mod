@@ -4,9 +4,6 @@ go 1.24
 
 toolchain go1.24.1
 
-// replicating the replace directive on cosmos SDK
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
 require (
 	github.com/ethereum/go-ethereum v1.15.3
 	github.com/google/uuid v1.6.0
@@ -77,7 +74,7 @@ require (
 	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/gogo/protobuf v1.3.3 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
